@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kea DHCP Config Generator — OCASDEV</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@300;400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --n950:#020b1a;--n900:#050f22;--n850:#071428;--n800:#0a1c36;--n750:#0d2348;
+  --n700:#112d5e;--n600:#183d7a;--n500:#1e4d96;
+  --b400:#3b7fd4;--b300:#5c9de0;--b200:#8abbec;--b100:#b8d7f5;
+  --c400:#0ea5c8;--g400:#10b981;--g300:#34d399;
+  --a400:#f59e0b;--r400:#ef4444;--r300:#f87171;
+  --tp:#e8f0fe;--ts:#8ba8cc;--tm:#4a6380;
+  --bd:rgba(59,127,212,.18);--bdh:rgba(59,127,212,.35);
+  --sf:rgba(10,28,54,.8);--ib:rgba(5,15,34,.7);
+  --ag:rgba(59,127,212,.15);
+  --fu:'DM Sans',sans-serif;--fd:'Syne',sans-serif;--fm:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--fu);background:var(--n950);color:var(--tp);min-height:100vh;font-size:14px;line-height:1.6}
+
+header{background:rgba(2,11,26,.95);border-bottom:1px solid var(--bd);padding:0 2rem;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+.logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.logo img{height:28px}
+.lsep{width:1px;height:20px;background:var(--bd)}
+.ltool{font-family:var(--fd);font-size:15px;font-weight:700;color:var(--tp);letter-spacing:.04em}
+.ltool span{color:var(--b300)}
+.hact{display:flex;gap:8px;align-items:center}
+
+.app{display:grid;grid-template-columns:262px 1fr 405px;min-height:calc(100vh - 60px)}
+
+.sb{background:rgba(5,15,34,.6);border-right:1px solid var(--bd);padding:1.5rem 0;overflow-y:auto;position:sticky;top:60px;height:calc(100vh - 60px)}
+.sl{font-size:10px;font-weight:600;letter-spacing:.12em;color:var(--tm);text-transform:uppercase;padding:1rem 1.25rem .4rem}
+.si{display:flex;align-items:center;gap:10px;padding:.5rem 1.25rem;cursor:pointer;color:var(--ts);font-size:13px;font-weight:500;border-left:2px solid transparent;transition:all .15s;user-select:none}
+.si:hover{color:var(--tp);background:var(--ag)}
+.si.active{color:var(--b300);border-left-color:var(--b400);background:rgba(59,127,212,.08)}
+.si svg{width:16px;height:16px;opacity:.7;flex-shrink:0}
+.si.active svg{opacity:1}
+
+main{padding:2rem;overflow-y:auto;max-height:calc(100vh - 60px)}
+.sp{display:none}.sp.active{display:block}
+.ph{margin-bottom:1.75rem}
+.pt{font-family:var(--fd);font-size:20px;font-weight:700;color:var(--tp);margin-bottom:4px}
+.pd{font-size:13px;color:var(--ts)}
+
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+.fgrp{display:flex;flex-direction:column;gap:6px}
+.fgrp.s2{grid-column:span 2}.fgrp.s3{grid-column:span 3}
+label{font-size:12px;font-weight:600;color:var(--ts);letter-spacing:.04em;text-transform:uppercase}
+input[type=text],input[type=number],select,textarea{background:var(--ib);border:1px solid var(--bd);color:var(--tp);padding:.5rem .75rem;border-radius:6px;font-family:var(--fu);font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--b400);box-shadow:0 0 0 3px rgba(59,127,212,.12)}
+select{appearance:none;cursor:pointer;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a6380' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .75rem center;padding-right:2.25rem}
+select option{background:var(--n850);color:var(--tp)}
+textarea{resize:vertical;min-height:70px;font-family:var(--fm);font-size:12px}
+
+.tr{display:flex;align-items:center;justify-content:space-between;padding:.6rem .85rem;background:var(--ib);border:1px solid var(--bd);border-radius:6px;cursor:pointer;transition:border-color .15s}
+.tr:hover{border-color:var(--bdh)}
+.tl strong{font-size:13px;font-weight:500;color:var(--tp);display:block}
+.tl span{font-size:11px;color:var(--tm)}
+.ts2{width:36px;height:20px;background:var(--n700);border-radius:10px;position:relative;transition:background .2s;flex-shrink:0;border:1px solid var(--bd)}
+.ts2::after{content:'';position:absolute;left:2px;top:2px;width:14px;height:14px;background:var(--tm);border-radius:50%;transition:transform .2s,background .2s}
+.tr.on .ts2{background:var(--n600);border-color:var(--b400)}
+.tr.on .ts2::after{transform:translateX(16px);background:var(--b300)}
+
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:1.25rem;margin-bottom:1rem}
+.ct{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--b300);margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.ct::after{content:'';flex:1;height:1px;background:var(--bd)}
+
+.el{display:flex;flex-direction:column;gap:8px}
+.ei{display:grid;gap:8px;align-items:center;background:var(--ib);border:1px solid var(--bd);border-radius:6px;padding:.5rem .75rem}
+.ei input{border:none;background:transparent;padding:0}
+.ei input:focus{box-shadow:none}
+.ei select{background:var(--ib);border:none;padding:0 6px;font-size:12px;color:var(--ts)}
+
+.blk{background:rgba(5,15,34,.6);border:1px solid var(--bd);border-radius:8px;padding:1rem;margin-bottom:.75rem}
+.blkh{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.blkn{font-family:var(--fm);font-size:12px;color:var(--b300);font-weight:600}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:.45rem 1rem;border-radius:6px;font-family:var(--fu);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;border:1px solid transparent;white-space:nowrap}
+.bp{background:var(--b400);color:#fff;border-color:var(--b300)}.bp:hover{background:var(--b300)}
+.bs{background:transparent;color:var(--ts);border-color:var(--bd)}.bs:hover{color:var(--tp);border-color:var(--bdh);background:var(--ag)}
+.bd2{background:transparent;color:var(--r400);border-color:transparent;padding:.3rem .5rem}.bd2:hover{background:rgba(239,68,68,.1)}
+.bsm{padding:.3rem .7rem;font-size:12px}
+.ba{background:transparent;border:1px dashed var(--bdh);color:var(--ts);width:100%;padding:.5rem;margin-top:8px;border-radius:6px;font-size:12px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.ba:hover{border-color:var(--b400);color:var(--b300);background:var(--ag)}
+
+/* Output */
+.op{background:var(--n900);border-left:1px solid var(--bd);display:flex;flex-direction:column;position:sticky;top:60px;height:calc(100vh - 60px)}
+.oh{padding:1rem 1.25rem;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.ot{font-family:var(--fm);font-size:12px;font-weight:700;color:var(--b300);letter-spacing:.06em;text-transform:uppercase}
+.otabs{display:flex;gap:2px;padding:.5rem 1rem;border-bottom:1px solid var(--bd);flex-shrink:0;overflow-x:auto}
+.otab{font-size:11px;font-weight:600;padding:.3rem .75rem;border-radius:4px;cursor:pointer;color:var(--tm);border:1px solid transparent;white-space:nowrap;transition:all .15s}
+.otab:hover{color:var(--ts);background:var(--ag)}
+.otab.active{color:var(--b300);background:rgba(59,127,212,.1);border-color:var(--bd)}
+.oc{flex:1;overflow-y:auto;padding:1rem}
+.oc pre{font-family:var(--fm);font-size:11.5px;line-height:1.7;color:var(--ts);white-space:pre;tab-size:2}
+.cmt{color:var(--tm);font-style:italic}.kw{color:#7dd3fc}.str{color:#86efac}
+.num{color:#fde68a}.key{color:#c4b5fd}.sec{color:var(--b300);font-weight:700}.val{color:#f9a8d4}
+.oa{padding:.75rem 1.25rem;border-top:1px solid var(--bd);display:flex;gap:8px;flex-shrink:0}
+.sbar{display:flex;align-items:center;gap:1rem;padding:.4rem 1.25rem;background:rgba(2,11,26,.8);border-top:1px solid var(--bd);font-size:11px;color:var(--tm);flex-shrink:0}
+.sdot{width:6px;height:6px;border-radius:50%;background:var(--g400);animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.bb{background:rgba(59,127,212,.15);color:var(--b300);border:1px solid rgba(59,127,212,.25)}
+.bg{background:rgba(16,185,129,.1);color:var(--g300);border:1px solid rgba(16,185,129,.2)}
+.ba2{background:rgba(245,158,11,.1);color:var(--a400);border:1px solid rgba(245,158,11,.2)}
+.hint{font-size:11px;color:var(--tm);margin-top:4px}
+.cf{position:fixed;bottom:2rem;right:2rem;background:var(--g400);color:#fff;padding:.6rem 1.2rem;border-radius:8px;font-size:13px;font-weight:600;z-index:999;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
+.cf.show{opacity:1;transform:translateY(0)}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--n700);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--n600)}
+@media(max-width:1200px){.app{grid-template-columns:230px 1fr 360px}}
+@media(max-width:900px){.app{grid-template-columns:1fr}.sb{position:static;height:auto;border-right:none;border-bottom:1px solid var(--bd);display:flex;flex-wrap:wrap;padding:.5rem}.sl{display:none}.si{border-left:none;border-bottom:2px solid transparent;padding:.4rem .75rem}.si.active{border-bottom-color:var(--b400)}.op{position:static;height:auto}.oc{height:400px}}
+</style>
+</head>
+<body>
+
+<header>
+  <a href="https://ocasdev.com" class="logo" target="_blank">
+    <img src="https://cdn.ocasdev.com/public/img/ocasdev.png" alt="OCASDEV">
+    <div class="lsep"></div>
+    <span class="ltool">Kea DHCP <span>Config</span> Generator</span>
+  </a>
+  <div class="hact">
+    <span class="badge bb">v2.0</span>
+    <a href="https://kea.readthedocs.io/" target="_blank" class="btn bs bsm">Docs Kea</a>
+  </div>
+</header>
+
+<div class="app">
+
+<!-- SIDEBAR -->
+<nav class="sb">
+  <div class="sl">DHCPv4</div>
+  <div class="si active" onclick="show('global4')" data-s="global4">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2c-2 2-3 4-3 6s1 4 3 6M8 2c2 2 3 4 3 6s-1 4-3 6M2 8h12"/></svg>
+    Options globales v4
+  </div>
+  <div class="si" onclick="show('ifaces')" data-s="ifaces">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="5" width="12" height="7" rx="1"/><path d="M5 5V3h6v2"/></svg>
+    Interfaces & Sockets
+  </div>
+  <div class="si" onclick="show('options4')" data-s="options4">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M3 8h10M3 12h6"/></svg>
+    Options DHCP v4
+  </div>
+  <div class="si" onclick="show('subnet4')" data-s="subnet4">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="4" rx="1"/><rect x="2" y="9" width="12" height="4" rx="1"/></svg>
+    Subnets v4
+  </div>
+  <div class="si" onclick="show('pools4')" data-s="pools4">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2"/><circle cx="3" cy="8" r="1.5"/><circle cx="13" cy="8" r="1.5"/><path d="M4.5 8h2M9.5 8h2"/></svg>
+    Pools & Plages
+  </div>
+  <div class="si" onclick="show('reservations4')" data-s="reservations4">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L3 4v4c0 3 2.3 5.4 5 6 2.7-.6 5-3 5-6V4z"/></svg>
+    Réservations (v4)
+  </div>
+
+  <div class="sl">DHCPv6</div>
+  <div class="si" onclick="show('global6')" data-s="global6">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2c-2 2-3 4-3 6s1 4 3 6M8 2c2 2 3 4 3 6s-1 4-3 6M2 8h12"/></svg>
+    Options globales v6
+  </div>
+  <div class="si" onclick="show('subnet6')" data-s="subnet6">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="4" rx="1"/><rect x="2" y="9" width="12" height="4" rx="1"/></svg>
+    Subnets v6
+  </div>
+  <div class="si" onclick="show('pd')" data-s="pd">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h12M5 5l-3 3 3 3M11 5l3 3-3 3"/></svg>
+    Prefix Delegation
+  </div>
+  <div class="si" onclick="show('reservations6')" data-s="reservations6">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2L3 4v4c0 3 2.3 5.4 5 6 2.7-.6 5-3 5-6V4z"/></svg>
+    Réservations (v6)
+  </div>
+
+  <div class="sl">Haute Disponibilité</div>
+  <div class="si" onclick="show('ha')" data-s="ha">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="4" cy="8" r="2.5"/><circle cx="12" cy="8" r="2.5"/><path d="M6.5 8h3"/></svg>
+    HA (High Availability)
+  </div>
+  <div class="si" onclick="show('failover')" data-s="failover">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6h12M2 10h12"/><circle cx="5" cy="6" r="1.5" fill="currentColor"/><circle cx="11" cy="10" r="1.5" fill="currentColor"/></svg>
+    Failover & Lease Sync
+  </div>
+
+  <div class="sl">Backends & Stockage</div>
+  <div class="si" onclick="show('backends')" data-s="backends">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="8" cy="5" rx="6" ry="2"/><path d="M2 5v6c0 1.1 2.7 2 6 2s6-.9 6-2V5"/><path d="M2 8c0 1.1 2.7 2 6 2s6-.9 6-2"/></svg>
+    Backends (MySQL/PgSQL/Memfile)
+  </div>
+
+  <div class="sl">Hooks & Modules</div>
+  <div class="si" onclick="show('hooks')" data-s="hooks">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2v6l-3 3"/><circle cx="8" cy="8" r="6"/></svg>
+    Hooks Libraries
+  </div>
+
+  <div class="sl">DNS & Logging</div>
+  <div class="si" onclick="show('ddns')" data-s="ddns">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2c-2 2-3 4-3 6s1 4 3 6"/><path d="M2 8h12"/></svg>
+    DDNS (kea-dhcp-ddns)
+  </div>
+  <div class="si" onclick="show('logging')" data-s="logging">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M3 8h10M3 12h6"/></svg>
+    Logging
+  </div>
+
+  <div class="sl">Gestion</div>
+  <div class="si" onclick="show('ctrl')" data-s="ctrl">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="10" height="10" rx="2"/><path d="M6 8h4M8 6v4"/></svg>
+    Control Agent
+  </div>
+  <div class="si" onclick="show('stork')" data-s="stork">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 8h3l2-4 2 8 2-4h3"/></svg>
+    Stork Agent
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+  <!-- GLOBAL v4 -->
+  <div class="sp active" id="panel-global4">
+    <div class="ph"><div class="pt">Options globales DHCPv4</div><div class="pd">kea-dhcp4.conf — section "Dhcp4"</div></div>
+    <div class="card">
+      <div class="ct">Timers & Durées</div>
+      <div class="fg3">
+        <div class="fgrp"><label>valid-lifetime (s)</label><input type="number" id="g4_valid" value="86400"><span class="hint">Durée bail par défaut</span></div>
+        <div class="fgrp"><label>min-valid-lifetime (s)</label><input type="number" id="g4_minvalid" value="600"></div>
+        <div class="fgrp"><label>max-valid-lifetime (s)</label><input type="number" id="g4_maxvalid" value="86400"></div>
+        <div class="fgrp"><label>renew-timer (s)</label><input type="number" id="g4_renew" value="43200"><span class="hint">T1 = 50% valid-lifetime</span></div>
+        <div class="fgrp"><label>rebind-timer (s)</label><input type="number" id="g4_rebind" value="75600"><span class="hint">T2 = 87.5%</span></div>
+        <div class="fgrp"><label>offer-lifetime (s)</label><input type="number" id="g4_offer" value="120"><span class="hint">Durée réservation DISCOVER</span></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Comportement serveur</div>
+      <div class="fg">
+        <div class="fgrp"><label>next-server (siaddr)</label><input type="text" id="g4_next_server" placeholder="192.168.1.1 (PXE/TFTP)"></div>
+        <div class="fgrp"><label>server-tag</label><input type="text" id="g4_server_tag" placeholder="kea-primary"></div>
+        <div class="fgrp"><label>server-hostname</label><input type="text" id="g4_server_hostname" placeholder="dhcp.example.com"></div>
+        <div class="fgrp"><label>boot-file-name</label><input type="text" id="g4_boot_file" placeholder="pxelinux.0 (PXE)"></div>
+        <div class="fgrp"><label>match-client-id</label>
+          <select id="g4_match_clientid"><option value="true">true (recommandé)</option><option value="false">false</option></select>
+        </div>
+        <div class="fgrp"><label>authoritative</label>
+          <select id="g4_authoritative"><option value="true">true</option><option value="false">false</option></select>
+        </div>
+        <div class="tr on" onclick="tog(this)" id="g4_echo_clientid"><div class="tl"><strong>echo-client-id true</strong><span>Retourner le client-id dans la réponse</span></div><div class="ts2"></div></div>
+        <div class="tr on" onclick="tog(this)" id="g4_store_extended"><div class="tl"><strong>store-extended-info true</strong><span>Stocker relay agent info, client-id</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="g4_calculate_tee"><div class="tl"><strong>calculate-tee-times true</strong><span>Calculer T1/T2 automatiquement</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="g4_early_global"><div class="tl"><strong>early-global-reservations-lookup</strong><span>Chercher réservations avant subnet</span></div><div class="ts2"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Expired Leases</div>
+      <div class="fg3">
+        <div class="fgrp"><label>flush-reclaimed-timer-wait-time (s)</label><input type="number" id="g4_flush_wait" value="25"></div>
+        <div class="fgrp"><label>hold-reclaimed-time (s)</label><input type="number" id="g4_hold_reclaimed" value="3600"></div>
+        <div class="fgrp"><label>max-reclaim-leases</label><input type="number" id="g4_max_reclaim" value="100"></div>
+        <div class="fgrp"><label>max-reclaim-time (ms)</label><input type="number" id="g4_max_reclaim_time" value="250"></div>
+        <div class="fgrp"><label>unwarned-reclaim-cycles</label><input type="number" id="g4_unwarn_cycles" value="5"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Sanity Checks</div>
+      <div class="fg">
+        <div class="fgrp"><label>lease-checks</label>
+          <select id="g4_lease_checks"><option value="warn">warn</option><option value="fix">fix</option><option value="fix-del">fix-del</option><option value="del">del</option><option value="none">none</option></select>
+        </div>
+        <div class="fgrp"><label>extended-info-checks</label>
+          <select id="g4_extinfo_checks"><option value="fix">fix</option><option value="warn">warn</option><option value="none">none</option></select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERFACES -->
+  <div class="sp" id="panel-ifaces">
+    <div class="ph"><div class="pt">Interfaces & Sockets</div><div class="pd">Interfaces d'écoute pour DHCPv4 et DHCPv6</div></div>
+    <div class="card">
+      <div class="ct">Interfaces DHCPv4</div>
+      <div id="ifaces4-list" class="el">
+        <div class="ei" style="grid-template-columns:1fr auto"><input type="text" value="eth0" placeholder="Nom interface"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button></div>
+        <div class="ei" style="grid-template-columns:1fr auto"><input type="text" value="eth1" placeholder="Nom interface"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button></div>
+      </div>
+      <button class="ba" onclick="addIface('ifaces4-list')">+ Ajouter une interface v4</button>
+      <div class="fg" style="margin-top:.75rem">
+        <div class="tr on" onclick="tog(this)" id="if4_redetect"><div class="tl"><strong>re-detect true</strong><span>Redétecter les interfaces au reload</span></div><div class="ts2"></div></div>
+        <div class="fgrp"><label>service-sockets-max-retries</label><input type="number" id="if4_max_retries" value="5"></div>
+        <div class="fgrp"><label>service-sockets-retry-wait-time (ms)</label><input type="number" id="if4_retry_wait" value="5000"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Interfaces DHCPv6</div>
+      <div id="ifaces6-list" class="el">
+        <div class="ei" style="grid-template-columns:1fr auto"><input type="text" value="eth0" placeholder="Nom interface"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button></div>
+      </div>
+      <button class="ba" onclick="addIface('ifaces6-list')">+ Ajouter une interface v6</button>
+    </div>
+    <div class="card">
+      <div class="ct">Relay Agent (sockets spécifiques)</div>
+      <div id="relay-sockets" class="el">
+        <div class="ei" style="grid-template-columns:1fr 1fr auto">
+          <input type="text" value="192.168.1.1" placeholder="IP locale">
+          <input type="text" value="" placeholder="Interface (optionnel)">
+          <button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>
+        </div>
+      </div>
+      <button class="ba" onclick="addRelaySocket()">+ Ajouter un socket relay</button>
+    </div>
+  </div>
+
+  <!-- OPTIONS v4 -->
+  <div class="sp" id="panel-options4">
+    <div class="ph"><div class="pt">Options DHCP v4</div><div class="pd">option-data globales envoyées à tous les clients</div></div>
+    <div class="card">
+      <div class="ct">Options standard</div>
+      <div class="fg3">
+        <div class="fgrp"><label>routers (option 3)</label><input type="text" id="opt4_routers" value="192.168.1.1" placeholder="GW1, GW2"></div>
+        <div class="fgrp"><label>domain-name-servers (option 6)</label><input type="text" id="opt4_dns" value="8.8.8.8, 8.8.4.4" placeholder="DNS1, DNS2"></div>
+        <div class="fgrp"><label>domain-name (option 15)</label><input type="text" id="opt4_domain" placeholder="example.com"></div>
+        <div class="fgrp"><label>domain-search (option 119)</label><input type="text" id="opt4_domain_search" placeholder="example.com, corp.local"></div>
+        <div class="fgrp"><label>broadcast-address (option 28)</label><input type="text" id="opt4_broadcast" placeholder="192.168.1.255"></div>
+        <div class="fgrp"><label>subnet-mask (option 1)</label><input type="text" id="opt4_netmask" placeholder="255.255.255.0"></div>
+        <div class="fgrp"><label>ntp-servers (option 42)</label><input type="text" id="opt4_ntp" placeholder="192.168.1.1"></div>
+        <div class="fgrp"><label>log-servers (option 7)</label><input type="text" id="opt4_log" placeholder="192.168.1.100"></div>
+        <div class="fgrp"><label>time-servers (option 4)</label><input type="text" id="opt4_timeservers" placeholder="192.168.1.1"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Options PXE / Boot</div>
+      <div class="fg">
+        <div class="tr on" onclick="tog(this)" id="opt4_pxe"><div class="tl"><strong>Activer PXE Boot</strong><span>Options TFTP et boot-file</span></div><div class="ts2"></div></div>
+        <div class="fgrp"><label>tftp-server-name (option 66)</label><input type="text" id="opt4_tftp" placeholder="192.168.1.1"></div>
+        <div class="fgrp"><label>bootfile-name (option 67)</label><input type="text" id="opt4_bootfile" placeholder="pxelinux.0"></div>
+        <div class="fgrp"><label>BIOS boot file</label><input type="text" id="opt4_bios_boot" placeholder="pxelinux.0"></div>
+        <div class="fgrp"><label>UEFI boot file</label><input type="text" id="opt4_uefi_boot" placeholder="bootx64.efi"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Option 43 — Vendor Specific (Cisco, HP, etc.)</div>
+      <div class="tr" onclick="tog(this)" id="opt4_vendor"><div class="tl"><strong>Activer option 43</strong><span>Vendor-specific information</span></div><div class="ts2"></div></div>
+      <div class="fgrp" style="margin-top:.75rem"><label>vendor-encapsulated-options (hex)</label><input type="text" id="opt4_vendor_hex" placeholder="01:04:c0:a8:01:01"></div>
+    </div>
+    <div class="card">
+      <div class="ct">Options personnalisées (custom)</div>
+      <div id="custom-opts4" class="el">
+        <div class="ei" style="grid-template-columns:80px 1fr auto 1fr auto">
+          <input type="number" value="252" placeholder="Code">
+          <input type="text" value="wpad-url" placeholder="Nom">
+          <select class="ei"><option>string</option><option>uint8</option><option>uint16</option><option>uint32</option><option>boolean</option><option>ipv4-address</option><option>fqdn</option></select>
+          <input type="text" value="http://wpad.example.com/proxy.pac" placeholder="Valeur">
+          <button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>
+        </div>
+      </div>
+      <button class="ba" onclick="addCustomOpt4()">+ Ajouter une option custom</button>
+    </div>
+    <div class="card">
+      <div class="ct">Option classes (client-class)</div>
+      <div id="client-classes" class="el">
+        <div class="ei" style="grid-template-columns:1fr 1fr auto">
+          <input type="text" value="PXE-BIOS" placeholder="Nom de classe">
+          <input type="text" value="option[93].hex == 0x0000" placeholder="test (expression)">
+          <button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>
+        </div>
+        <div class="ei" style="grid-template-columns:1fr 1fr auto">
+          <input type="text" value="PXE-UEFI">
+          <input type="text" value="option[93].hex == 0x0007">
+          <button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>
+        </div>
+      </div>
+      <button class="ba" onclick="addClientClass()">+ Ajouter une classe</button>
+    </div>
+  </div>
+
+  <!-- SUBNETS v4 -->
+  <div class="sp" id="panel-subnet4">
+    <div class="ph"><div class="pt">Subnets DHCPv4</div><div class="pd">Déclaration des sous-réseaux IPv4</div></div>
+    <div id="subnets4-container">
+      <div class="blk" data-subnet4="0">
+        <div class="blkh"><span class="blkn">subnet4 — 192.168.1.0/24</span><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()">✕</button></div>
+        <div class="fg3">
+          <div class="fgrp"><label>subnet</label><input type="text" value="192.168.1.0/24" oninput="gen()"></div>
+          <div class="fgrp"><label>id (unique)</label><input type="number" value="1" oninput="gen()"></div>
+          <div class="fgrp"><label>interface</label><input type="text" value="eth0" oninput="gen()"></div>
+          <div class="fgrp"><label>valid-lifetime (s)</label><input type="number" value="" placeholder="hérite global" oninput="gen()"></div>
+          <div class="fgrp"><label>renew-timer (s)</label><input type="number" value="" placeholder="hérite global" oninput="gen()"></div>
+          <div class="fgrp"><label>rebind-timer (s)</label><input type="number" value="" placeholder="hérite global" oninput="gen()"></div>
+        </div>
+        <div style="margin-top:.75rem">
+          <label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Pools</label>
+          <div class="el pool-list">
+            <div class="ei" style="grid-template-columns:1fr 1fr auto">
+              <input type="text" value="192.168.1.100" placeholder="Début">
+              <input type="text" value="192.168.1.200" placeholder="Fin">
+              <button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>
+            </div>
+          </div>
+          <button class="ba" onclick="addPool(this)">+ Pool</button>
+        </div>
+        <div style="margin-top:.75rem">
+          <label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Options subnet</label>
+          <div class="fg3">
+            <div class="fgrp"><label>routers</label><input type="text" value="192.168.1.1" oninput="gen()"></div>
+            <div class="fgrp"><label>dns-servers</label><input type="text" value="192.168.1.1" oninput="gen()"></div>
+            <div class="fgrp"><label>domain-name</label><input type="text" value="" placeholder="local.example.com" oninput="gen()"></div>
+          </div>
+        </div>
+        <div style="margin-top:.75rem">
+          <label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Relay</label>
+          <div class="fgrp"><input type="text" value="" placeholder="IP de l'agent relay (si relay)" oninput="gen()"></div>
+        </div>
+      </div>
+    </div>
+    <button class="ba" onclick="addSubnet4()">+ Ajouter un subnet v4</button>
+
+    <div class="card" style="margin-top:1rem">
+      <div class="ct">Shared Networks</div>
+      <div class="tr" onclick="tog(this)" id="sn4_shared"><div class="tl"><strong>Activer shared-networks</strong><span>Plusieurs subnets sur le même segment réseau</span></div><div class="ts2"></div></div>
+      <div class="fgrp" style="margin-top:.75rem"><label>Nom du shared-network</label><input type="text" id="sn4_name" value="floor1" placeholder="floor1"></div>
+      <span class="hint">Les subnets ci-dessus seront inclus dans ce shared-network si activé</span>
+    </div>
+  </div>
+
+  <!-- POOLS -->
+  <div class="sp" id="panel-pools4">
+    <div class="ph"><div class="pt">Pools & Plages d'adresses</div><div class="pd">Gestion avancée des pools avec client-class</div></div>
+    <div class="card">
+      <div class="ct">Pools avec classes (class-based pools)</div>
+      <div id="class-pools" class="el">
+        <div class="ei" style="grid-template-columns:1fr 1fr 1fr auto">
+          <input type="text" value="192.168.1.150" placeholder="Start">
+          <input type="text" value="192.168.1.199" placeholder="End">
+          <input type="text" value="PXE-BIOS" placeholder="client-class">
+          <button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>
+        </div>
+        <div class="ei" style="grid-template-columns:1fr 1fr 1fr auto">
+          <input type="text" value="192.168.1.200" placeholder="Start">
+          <input type="text" value="192.168.1.249" placeholder="End">
+          <input type="text" value="PXE-UEFI" placeholder="client-class">
+          <button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>
+        </div>
+      </div>
+      <button class="ba" onclick="addClassPool()">+ Ajouter un pool avec classe</button>
+    </div>
+    <div class="card">
+      <div class="ct">Excluded Prefixes (v6)</div>
+      <div id="excluded-pools" class="el">
+        <div class="ei" style="grid-template-columns:1fr 80px auto">
+          <input type="text" value="2001:db8:1::" placeholder="Préfixe exclu">
+          <input type="number" value="64" placeholder="Longueur">
+          <button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>
+        </div>
+      </div>
+      <button class="ba" onclick="addExcludedPool()">+ Préfixe exclu</button>
+    </div>
+  </div>
+
+  <!-- RESERVATIONS v4 -->
+  <div class="sp" id="panel-reservations4">
+    <div class="ph"><div class="pt">Réservations DHCPv4</div><div class="pd">Adresses statiques par MAC, client-id, circuit-id</div></div>
+    <div class="card">
+      <div class="ct">Paramètres réservations</div>
+      <div class="fg">
+        <div class="fgrp"><label>reservations-global</label>
+          <select id="r4_global"><option value="false">false</option><option value="true">true</option></select>
+        </div>
+        <div class="fgrp"><label>reservations-in-subnet</label>
+          <select id="r4_in_subnet"><option value="true">true</option><option value="false">false</option></select>
+        </div>
+        <div class="fgrp"><label>reservations-out-of-pool</label>
+          <select id="r4_out_pool"><option value="false">false</option><option value="true">true</option></select>
+        </div>
+        <div class="fgrp"><label>reservation-mode</label>
+          <select id="r4_mode"><option value="all">all</option><option value="global">global</option><option value="out-of-pool">out-of-pool</option><option value="disabled">disabled</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Réservations</div>
+      <div id="reservations4" class="el">
+        <div class="blk">
+          <div class="fg3">
+            <div class="fgrp"><label>Identifiant</label>
+              <select class="res4-type"><option value="hw-address">MAC (hw-address)</option><option value="client-id">client-id</option><option value="circuit-id">circuit-id (option 82)</option><option value="duid">DUID</option><option value="flex-id">flex-id (hook)</option></select>
+            </div>
+            <div class="fgrp"><label>Valeur identifiant</label><input type="text" value="de:ad:be:ef:00:01" placeholder="aa:bb:cc:dd:ee:ff"></div>
+            <div class="fgrp"><label>ip-address</label><input type="text" value="192.168.1.50" placeholder="IP réservée"></div>
+            <div class="fgrp"><label>hostname</label><input type="text" value="printer01" placeholder="Nom DNS"></div>
+            <div class="fgrp"><label>next-server</label><input type="text" value="" placeholder="Surcharge PXE"></div>
+            <div class="fgrp"><label>boot-file-name</label><input type="text" value="" placeholder="Surcharge boot file"></div>
+          </div>
+          <div style="margin-top:.5rem">
+            <label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.3rem;display:block">Options spécifiques</label>
+            <div class="fgrp"><input type="text" value="" placeholder='ex: routers = 192.168.1.254'></div>
+          </div>
+          <button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()" style="margin-top:.5rem">Supprimer</button>
+        </div>
+      </div>
+      <button class="ba" onclick="addReservation4()">+ Ajouter une réservation</button>
+    </div>
+  </div>
+
+  <!-- GLOBAL v6 -->
+  <div class="sp" id="panel-global6">
+    <div class="ph"><div class="pt">Options globales DHCPv6</div><div class="pd">kea-dhcp6.conf — section "Dhcp6"</div></div>
+    <div class="card">
+      <div class="ct">Timers & Durées</div>
+      <div class="fg3">
+        <div class="fgrp"><label>preferred-lifetime (s)</label><input type="number" id="g6_preferred" value="3600"></div>
+        <div class="fgrp"><label>valid-lifetime (s)</label><input type="number" id="g6_valid" value="7200"></div>
+        <div class="fgrp"><label>min-valid-lifetime (s)</label><input type="number" id="g6_minvalid" value="600"></div>
+        <div class="fgrp"><label>max-valid-lifetime (s)</label><input type="number" id="g6_maxvalid" value="86400"></div>
+        <div class="fgrp"><label>renew-timer (s)</label><input type="number" id="g6_renew" value="1800"></div>
+        <div class="fgrp"><label>rebind-timer (s)</label><input type="number" id="g6_rebind" value="2700"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Options DHCPv6 standard</div>
+      <div class="fg3">
+        <div class="fgrp"><label>dns-servers (option 23)</label><input type="text" id="g6_dns" value="2001:db8::53" placeholder="2001:db8::1, 2001:db8::2"></div>
+        <div class="fgrp"><label>domain-search (option 24)</label><input type="text" id="g6_domain" placeholder="example.com"></div>
+        <div class="fgrp"><label>sntp-servers (option 31)</label><input type="text" id="g6_sntp" placeholder="2001:db8::ntp"></div>
+        <div class="fgrp"><label>info-refresh-time (option 32)</label><input type="number" id="g6_info_refresh" value="86400"></div>
+        <div class="fgrp"><label>server-id type</label>
+          <select id="g6_serverid_type"><option value="LLT">LLT (Link-layer + Time)</option><option value="LL">LL (Link-layer)</option><option value="EN">EN (Enterprise Number)</option></select>
+        </div>
+        <div class="fgrp"><label>dhcp6-rapid-commit</label>
+          <select id="g6_rapid_commit"><option value="false">false</option><option value="true">true (2-way handshake)</option></select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Comportement v6</div>
+      <div class="fg">
+        <div class="tr on" onclick="tog(this)" id="g6_store_extended"><div class="tl"><strong>store-extended-info true</strong><span>Stocker relay info, interface-id</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="g6_calculate_tee"><div class="tl"><strong>calculate-tee-times true</strong><span>Calculer T1/T2 auto</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="g6_early_global"><div class="tl"><strong>early-global-reservations-lookup</strong><span>Chercher réservations avant subnet</span></div><div class="ts2"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SUBNETS v6 -->
+  <div class="sp" id="panel-subnet6">
+    <div class="ph"><div class="pt">Subnets DHCPv6</div><div class="pd">Sous-réseaux IPv6 avec pools IA_NA et IA_PD</div></div>
+    <div id="subnets6-container">
+      <div class="blk" data-subnet6="0">
+        <div class="blkh"><span class="blkn">subnet6 — 2001:db8:1::/64</span><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()">✕</button></div>
+        <div class="fg3">
+          <div class="fgrp"><label>subnet</label><input type="text" value="2001:db8:1::/64" oninput="gen()"></div>
+          <div class="fgrp"><label>id</label><input type="number" value="1" oninput="gen()"></div>
+          <div class="fgrp"><label>interface</label><input type="text" value="eth0" oninput="gen()"></div>
+          <div class="fgrp"><label>preferred-lifetime (s)</label><input type="number" value="" placeholder="hérite" oninput="gen()"></div>
+          <div class="fgrp"><label>valid-lifetime (s)</label><input type="number" value="" placeholder="hérite" oninput="gen()"></div>
+        </div>
+        <div style="margin-top:.75rem">
+          <label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Pools IA_NA (adresses)</label>
+          <div class="el pool6-list">
+            <div class="ei" style="grid-template-columns:1fr auto">
+              <input type="text" value="2001:db8:1::100 - 2001:db8:1::ffff" placeholder="start - end ou préfixe">
+              <button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>
+            </div>
+          </div>
+          <button class="ba" onclick="addPool6(this)">+ Pool IA_NA</button>
+        </div>
+        <div style="margin-top:.75rem">
+          <label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Options subnet</label>
+          <div class="fg">
+            <div class="fgrp"><label>dns-servers</label><input type="text" value="2001:db8::53" oninput="gen()"></div>
+            <div class="fgrp"><label>domain-search</label><input type="text" value="" placeholder="example.com" oninput="gen()"></div>
+          </div>
+        </div>
+        <div style="margin-top:.75rem">
+          <label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Relay</label>
+          <div class="fgrp"><input type="text" value="" placeholder="Adresse du relay agent IPv6" oninput="gen()"></div>
+        </div>
+      </div>
+    </div>
+    <button class="ba" onclick="addSubnet6()">+ Ajouter un subnet v6</button>
+  </div>
+
+  <!-- PREFIX DELEGATION -->
+  <div class="sp" id="panel-pd">
+    <div class="ph"><div class="pt">Prefix Delegation (IA_PD)</div><div class="pd">Délégation de préfixes IPv6 aux routeurs CPE</div></div>
+    <div class="card">
+      <div class="ct">Pools IA_PD par subnet</div>
+      <div id="pd-pools-container">
+        <div class="blk">
+          <div class="blkh"><span class="blkn">IA_PD pool</span><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()">✕</button></div>
+          <div class="fg3">
+            <div class="fgrp"><label>subnet associé (id)</label><input type="number" value="1" placeholder="ID subnet6" oninput="gen()"></div>
+            <div class="fgrp"><label>préfixe pool</label><input type="text" value="2001:db8:2::" placeholder="2001:db8:2::" oninput="gen()"></div>
+            <div class="fgrp"><label>longueur préfixe</label><input type="number" value="56" placeholder="48-64" oninput="gen()"></div>
+            <div class="fgrp"><label>longueur délégué</label><input type="number" value="64" placeholder="64 (à déléguer)" oninput="gen()"></div>
+            <div class="fgrp"><label>preferred-lifetime</label><input type="number" value="3600" oninput="gen()"></div>
+            <div class="fgrp"><label>valid-lifetime</label><input type="number" value="7200" oninput="gen()"></div>
+          </div>
+          <div style="margin-top:.5rem">
+            <label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.3rem;display:block">Excluded prefix</label>
+            <div class="fg">
+              <div class="fgrp"><input type="text" value="" placeholder="2001:db8:2::0 (exclu)"></div>
+              <div class="fgrp"><input type="number" value="" placeholder="64 (longueur exclu)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="ba" onclick="addPDPool()">+ Ajouter un pool IA_PD</button>
+    </div>
+  </div>
+
+  <!-- RESERVATIONS v6 -->
+  <div class="sp" id="panel-reservations6">
+    <div class="ph"><div class="pt">Réservations DHCPv6</div><div class="pd">Adresses et préfixes statiques par DUID, HW address</div></div>
+    <div class="card">
+      <div class="ct">Réservations v6</div>
+      <div id="reservations6" class="el">
+        <div class="blk">
+          <div class="fg3">
+            <div class="fgrp"><label>Identifiant</label>
+              <select><option value="duid">DUID</option><option value="hw-address">MAC (hw-address)</option><option value="flex-id">flex-id</option></select>
+            </div>
+            <div class="fgrp"><label>Valeur</label><input type="text" value="00:03:00:01:de:ad:be:ef:00:01" placeholder="DUID ou MAC"></div>
+            <div class="fgrp"><label>ip-addresses</label><input type="text" value="2001:db8:1::50" placeholder="IA_NA"></div>
+            <div class="fgrp"><label>préfixes délégués</label><input type="text" value="" placeholder="2001:db8:2:100::/64"></div>
+            <div class="fgrp"><label>hostname</label><input type="text" value="router01" placeholder="Nom DNS"></div>
+          </div>
+          <button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()" style="margin-top:.5rem">Supprimer</button>
+        </div>
+      </div>
+      <button class="ba" onclick="addReservation6()">+ Ajouter une réservation v6</button>
+    </div>
+  </div>
+
+  <!-- HA -->
+  <div class="sp" id="panel-ha">
+    <div class="ph"><div class="pt">High Availability</div><div class="pd">Hook libdhcp_ha — modes hot-standby, load-balancing, passive-backup</div></div>
+    <div class="card">
+      <div class="ct">Configuration HA globale</div>
+      <div class="fg">
+        <div class="fgrp"><label>Mode HA</label>
+          <select id="ha_mode"><option value="hot-standby">hot-standby (actif/passif)</option><option value="load-balancing">load-balancing (actif/actif)</option><option value="passive-backup">passive-backup</option></select>
+        </div>
+        <div class="fgrp"><label>this-server-name</label><input type="text" id="ha_this_server" value="kea-primary" placeholder="Nom de CE serveur"></div>
+        <div class="tr on" onclick="tog(this)" id="ha_send_lease_updates"><div class="tl"><strong>send-lease-updates true</strong><span>Envoyer mises à jour de baux au partenaire</span></div><div class="ts2"></div></div>
+        <div class="tr on" onclick="tog(this)" id="ha_sync_leases"><div class="tl"><strong>sync-leases true</strong><span>Synchroniser les baux au démarrage</span></div><div class="ts2"></div></div>
+        <div class="fgrp"><label>heartbeat-delay (ms)</label><input type="number" id="ha_heartbeat" value="10000"></div>
+        <div class="fgrp"><label>max-response-delay (ms)</label><input type="number" id="ha_max_resp" value="60000"></div>
+        <div class="fgrp"><label>max-ack-delay (ms)</label><input type="number" id="ha_max_ack" value="5000"></div>
+        <div class="fgrp"><label>max-unacked-clients</label><input type="number" id="ha_max_unacked" value="10"></div>
+        <div class="fgrp"><label>sync-timeout (ms)</label><input type="number" id="ha_sync_timeout" value="60000"></div>
+        <div class="tr" onclick="tog(this)" id="ha_multi_threading"><div class="tl"><strong>enable-multi-threading (HA)</strong><span>HA avec multi-threading activé</span></div><div class="ts2"></div></div>
+        <div class="fgrp"><label>http-dedicated-listener port</label><input type="number" id="ha_http_port" value="8000" placeholder="8000"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Peers HA</div>
+      <div id="ha-peers">
+        <div class="blk">
+          <div class="blkh"><span class="blkn">peer — kea-primary</span><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()">✕</button></div>
+          <div class="fg">
+            <div class="fgrp"><label>name</label><input type="text" value="kea-primary" oninput="gen()"></div>
+            <div class="fgrp"><label>role</label>
+              <select onchange="gen()"><option value="primary">primary</option><option value="secondary">secondary</option><option value="standby">standby</option><option value="backup">backup</option></select>
+            </div>
+            <div class="fgrp"><label>url</label><input type="text" value="http://192.168.1.1:8000/" oninput="gen()"></div>
+            <div class="tr on" onclick="tog(this)"><div class="tl"><strong>auto-failover true</strong><span></span></div><div class="ts2"></div></div>
+          </div>
+        </div>
+        <div class="blk">
+          <div class="blkh"><span class="blkn">peer — kea-secondary</span><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()">✕</button></div>
+          <div class="fg">
+            <div class="fgrp"><label>name</label><input type="text" value="kea-secondary" oninput="gen()"></div>
+            <div class="fgrp"><label>role</label>
+              <select onchange="gen()"><option value="secondary">secondary</option><option value="primary">primary</option><option value="standby">standby</option></select>
+            </div>
+            <div class="fgrp"><label>url</label><input type="text" value="http://192.168.1.2:8000/" oninput="gen()"></div>
+            <div class="tr on" onclick="tog(this)"><div class="tl"><strong>auto-failover true</strong><span></span></div><div class="ts2"></div></div>
+          </div>
+        </div>
+      </div>
+      <button class="ba" onclick="addHAPeer()">+ Ajouter un peer</button>
+    </div>
+    <div class="card">
+      <div class="ct">TLS entre peers HA</div>
+      <div class="tr" onclick="tog(this)" id="ha_tls"><div class="tl"><strong>Activer TLS mutual (mTLS)</strong><span>Sécuriser les communications HA</span></div><div class="ts2"></div></div>
+      <div class="fg" style="margin-top:.75rem">
+        <div class="fgrp"><label>cert-file</label><input type="text" id="ha_tls_cert" placeholder="/etc/kea/certs/kea.crt"></div>
+        <div class="fgrp"><label>key-file</label><input type="text" id="ha_tls_key" placeholder="/etc/kea/certs/kea.key"></div>
+        <div class="fgrp"><label>ca-file</label><input type="text" id="ha_tls_ca" placeholder="/etc/kea/certs/ca.crt"></div>
+        <div class="fgrp"><label>require-client-certs</label><select id="ha_tls_client_cert"><option value="true">true</option><option value="false">false</option></select></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAILOVER -->
+  <div class="sp" id="panel-failover">
+    <div class="ph"><div class="pt">Failover & Lease Sync</div><div class="pd">Synchronisation des baux entre instances Kea</div></div>
+    <div class="card">
+      <div class="ct">Lease synchronisation</div>
+      <div class="fg">
+        <div class="tr on" onclick="tog(this)" id="fo_lease_sync"><div class="tl"><strong>Activer lease-sync via HA</strong><span>Synchronisation complète au démarrage</span></div><div class="ts2"></div></div>
+        <div class="fgrp"><label>sync-page-limit</label><input type="number" id="fo_sync_page" value="1000"><span class="hint">Baux par page lors de la synchro</span></div>
+        <div class="fgrp"><label>delayed-updates-limit</label><input type="number" id="fo_delayed" value="100"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Multi-threading</div>
+      <div class="tr on" onclick="tog(this)" id="mt_enabled"><div class="tl"><strong>enable-multi-threading true</strong><span>Traitement concurrent des paquets</span></div><div class="ts2"></div></div>
+      <div class="fg3" style="margin-top:.75rem">
+        <div class="fgrp"><label>thread-pool-size</label><input type="number" id="mt_pool_size" value="4"><span class="hint">0 = auto (nb CPUs)</span></div>
+        <div class="fgrp"><label>packet-queue-size</label><input type="number" id="mt_queue_size" value="64"></div>
+        <div class="tr on" onclick="tog(this)" id="mt_queue_enable"><div class="tl"><strong>packet-thread-pool-size auto</strong><span></span></div><div class="ts2"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BACKENDS -->
+  <div class="sp" id="panel-backends">
+    <div class="ph"><div class="pt">Backends — Stockage des baux</div><div class="pd">memfile, MySQL, PostgreSQL, Cassandra</div></div>
+    <div class="card">
+      <div class="ct">Lease Database</div>
+      <div class="fgrp"><label>Type de backend</label>
+        <select id="be_lease_type" onchange="gen()">
+          <option value="memfile">memfile (fichier local, défaut)</option>
+          <option value="mysql">MySQL / MariaDB</option>
+          <option value="postgresql">PostgreSQL</option>
+        </select>
+      </div>
+      <div id="be-memfile" style="margin-top:.75rem">
+        <div class="fg">
+          <div class="fgrp"><label>persist</label><select id="be_persist"><option value="true">true (recommandé)</option><option value="false">false</option></select></div>
+          <div class="fgrp"><label>lfc-interval (s)</label><input type="number" id="be_lfc" value="3600"><span class="hint">Lease File Cleanup interval</span></div>
+          <div class="fgrp"><label>name (chemin fichier v4)</label><input type="text" id="be_file4" value="/var/lib/kea/dhcp4.leases"></div>
+          <div class="fgrp"><label>name (chemin fichier v6)</label><input type="text" id="be_file6" value="/var/lib/kea/dhcp6.leases"></div>
+          <div class="fgrp"><label>max-row-errors</label><input type="number" id="be_max_row_errors" value="0"></div>
+        </div>
+      </div>
+      <div id="be-sql" style="margin-top:.75rem;display:none">
+        <div class="fg3">
+          <div class="fgrp"><label>host</label><input type="text" id="be_host" value="localhost"></div>
+          <div class="fgrp"><label>port</label><input type="number" id="be_port" value="3306"></div>
+          <div class="fgrp"><label>name</label><input type="text" id="be_dbname" value="kea"></div>
+          <div class="fgrp"><label>user</label><input type="text" id="be_user" value="kea"></div>
+          <div class="fgrp"><label>password</label><input type="text" id="be_pass" value="" placeholder="mot de passe"></div>
+          <div class="fgrp"><label>connect-timeout (s)</label><input type="number" id="be_connect_timeout" value="10"></div>
+          <div class="fgrp"><label>reconnect-wait-time (ms)</label><input type="number" id="be_reconnect" value="3000"></div>
+          <div class="fgrp"><label>max-reconnect-tries</label><input type="number" id="be_max_reconnect" value="3"></div>
+          <div class="fgrp"><label>on-fail</label>
+            <select id="be_on_fail"><option value="stop-retry-exit">stop-retry-exit</option><option value="serve-retry-exit">serve-retry-exit</option><option value="serve-retry-continue">serve-retry-continue</option></select>
+          </div>
+          <div class="tr" onclick="tog(this)" id="be_readonly"><div class="tl"><strong>readonly false</strong><span>Base en lecture seule</span></div><div class="ts2"></div></div>
+          <div class="fgrp"><label>ssl-mode</label>
+            <select id="be_sslmode"><option value="disable">disable</option><option value="require">require</option><option value="verify-ca">verify-ca</option><option value="verify-full">verify-full</option></select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Hosts Database (réservations)</div>
+      <div class="tr" onclick="tog(this)" id="be_hosts_enabled"><div class="tl"><strong>Activer hosts database séparée</strong><span>Stocker les réservations en SQL</span></div><div class="ts2"></div></div>
+      <div class="fg" style="margin-top:.75rem">
+        <div class="fgrp"><label>type</label>
+          <select id="be_hosts_type"><option value="mysql">mysql</option><option value="postgresql">postgresql</option><option value="memfile">memfile</option></select>
+        </div>
+        <div class="fgrp"><label>host</label><input type="text" id="be_hosts_host" value="localhost"></div>
+        <div class="fgrp"><label>name</label><input type="text" id="be_hosts_db" value="kea"></div>
+        <div class="fgrp"><label>user</label><input type="text" id="be_hosts_user" value="kea"></div>
+        <div class="fgrp"><label>password</label><input type="text" id="be_hosts_pass" placeholder="mot de passe"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Config Backend (CB)</div>
+      <div class="tr" onclick="tog(this)" id="be_cb_enabled"><div class="tl"><strong>Activer Config Backend</strong><span>Configuration stockée en base (MySQL/PgSQL)</span></div><div class="ts2"></div></div>
+      <div class="fg" style="margin-top:.75rem">
+        <div class="fgrp"><label>type</label><select id="be_cb_type"><option value="mysql">mysql</option><option value="postgresql">postgresql</option></select></div>
+        <div class="fgrp"><label>host</label><input type="text" id="be_cb_host" value="localhost"></div>
+        <div class="fgrp"><label>name</label><input type="text" id="be_cb_db" value="kea_config"></div>
+        <div class="fgrp"><label>user</label><input type="text" id="be_cb_user" value="kea"></div>
+        <div class="fgrp"><label>password</label><input type="text" id="be_cb_pass" placeholder="mot de passe"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOOKS -->
+  <div class="sp" id="panel-hooks">
+    <div class="ph"><div class="pt">Hooks Libraries</div><div class="pd">Modules de fonctionnalités avancées Kea</div></div>
+    <div class="card">
+      <div class="ct">Hooks disponibles</div>
+      <div class="fg">
+        <div class="tr on" onclick="tog(this)" id="hk_ha"><div class="tl"><strong>libdhcp_ha</strong><span>High Availability (HA)</span></div><div class="ts2"></div></div>
+        <div class="tr on" onclick="tog(this)" id="hk_lease_cmds"><div class="tl"><strong>libdhcp_lease_cmds</strong><span>Gestion baux via API REST</span></div><div class="ts2"></div></div>
+        <div class="tr on" onclick="tog(this)" id="hk_stat_cmds"><div class="tl"><strong>libdhcp_stat_cmds</strong><span>Statistiques via API REST</span></div><div class="ts2"></div></div>
+        <div class="tr on" onclick="tog(this)" id="hk_host_cmds"><div class="tl"><strong>libdhcp_host_cmds</strong><span>Réservations via API REST</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_cb_cmds"><div class="tl"><strong>libdhcp_cb_cmds</strong><span>Config Backend commands</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_flex_id"><div class="tl"><strong>libdhcp_flex_id</strong><span>Identifiant client flexible (relay option)</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_flex_option"><div class="tl"><strong>libdhcp_flex_option</strong><span>Options DHCP dynamiques (expression)</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_class_cmds"><div class="tl"><strong>libdhcp_class_cmds</strong><span>Client classes via API</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_subnet_cmds"><div class="tl"><strong>libdhcp_subnet_cmds</strong><span>Gestion subnets via API REST</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_mysql_cb"><div class="tl"><strong>libdhcp_mysql_cb</strong><span>MySQL Config Backend</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_pgsql_cb"><div class="tl"><strong>libdhcp_pgsql_cb</strong><span>PostgreSQL Config Backend</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_run_script"><div class="tl"><strong>libdhcp_run_script</strong><span>Exécuter un script externe sur events</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_user_chk"><div class="tl"><strong>libdhcp_user_chk</strong><span>Vérification utilisateur externe</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_bootp"><div class="tl"><strong>libdhcp_bootp</strong><span>Compatibilité BOOTP</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_lease_query"><div class="tl"><strong>libdhcp_lease_query</strong><span>Bulk LeaseQuery (RFC 6926)</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="hk_ping_check"><div class="tl"><strong>libdhcp_ping_check</strong><span>Vérifier disponibilité IP avant attribution</span></div><div class="ts2"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Chemin des hooks</div>
+      <div class="fgrp"><label>Répertoire des .so</label><input type="text" id="hk_path" value="/usr/lib/x86_64-linux-gnu/kea/hooks"><span class="hint">Adapter selon votre architecture et version Kea</span></div>
+    </div>
+    <div class="card">
+      <div class="ct">libdhcp_run_script — paramètres</div>
+      <div class="fg">
+        <div class="fgrp"><label>Script path</label><input type="text" id="hk_script_path" value="/etc/kea/kea-hook.sh"></div>
+        <div class="fgrp"><label>sync (blocking)</label><select id="hk_script_sync"><option value="false">false (async)</option><option value="true">true (sync)</option></select></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">libdhcp_ping_check — paramètres</div>
+      <div class="fg3">
+        <div class="fgrp"><label>min-ping-requests</label><input type="number" id="hk_ping_min" value="1"></div>
+        <div class="fgrp"><label>reply-timeout (ms)</label><input type="number" id="hk_ping_timeout" value="100"></div>
+        <div class="fgrp"><label>ping-cltt-secs</label><input type="number" id="hk_ping_cltt" value="60"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DDNS -->
+  <div class="sp" id="panel-ddns">
+    <div class="ph"><div class="pt">DDNS — kea-dhcp-ddns</div><div class="pd">Mise à jour dynamique du DNS lors d'attribution de bail</div></div>
+    <div class="card">
+      <div class="ct">DDNS global (dans Dhcp4/Dhcp6)</div>
+      <div class="tr on" onclick="tog(this)" id="ddns_enabled"><div class="tl"><strong>ddns-send-updates true</strong><span>Activer les mises à jour DDNS</span></div><div class="ts2"></div></div>
+      <div class="fg" style="margin-top:.75rem">
+        <div class="tr" onclick="tog(this)" id="ddns_override_no_update"><div class="tl"><strong>ddns-override-no-update</strong><span>Ignorer le flag no-update du client</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="ddns_override_client_update"><div class="tl"><strong>ddns-override-client-update</strong><span>Forcer le serveur à faire les updates</span></div><div class="ts2"></div></div>
+        <div class="fgrp"><label>ddns-qualifying-suffix</label><input type="text" id="ddns_suffix" placeholder="example.com." oninput="gen()"></div>
+        <div class="fgrp"><label>ddns-replace-client-name</label>
+          <select id="ddns_replace_name"><option value="never">never</option><option value="always">always</option><option value="when-not-present">when-not-present</option><option value="when-present">when-present</option></select>
+        </div>
+        <div class="fgrp"><label>ddns-generated-prefix</label><input type="text" id="ddns_prefix" value="host" placeholder="host"></div>
+        <div class="fgrp"><label>ddns-hostname-char-set</label><input type="text" id="ddns_charset" value='[^A-Za-z0-9.-]' placeholder='[^A-Za-z0-9.-]'></div>
+        <div class="fgrp"><label>ddns-hostname-char-replacement</label><input type="text" id="ddns_charreplace" value="-" placeholder="-"></div>
+        <div class="tr" onclick="tog(this)" id="ddns_use_conflict"><div class="tl"><strong>ddns-use-conflict-resolution true</strong><span>RFC 4703 conflict resolution</span></div><div class="ts2"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">kea-dhcp-ddns.conf</div>
+      <div class="fg3">
+        <div class="fgrp"><label>ip-address</label><input type="text" id="ddns_ip" value="127.0.0.1"></div>
+        <div class="fgrp"><label>port</label><input type="number" id="ddns_port" value="53001"></div>
+        <div class="fgrp"><label>dns-server-timeout (ms)</label><input type="number" id="ddns_timeout" value="500"></div>
+        <div class="fgrp"><label>ncr-protocol</label>
+          <select id="ddns_ncr_proto"><option value="UDP">UDP</option><option value="TCP">TCP</option></select>
+        </div>
+        <div class="fgrp"><label>ncr-format</label>
+          <select id="ddns_ncr_fmt"><option value="JSON">JSON</option></select>
+        </div>
+        <div class="tr on" onclick="tog(this)" id="ddns_enable_updates_d"><div class="tl"><strong>enable-updates true</strong><span>Activer DDNS daemon</span></div><div class="ts2"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">TSIG pour DDNS</div>
+      <div class="tr" onclick="tog(this)" id="ddns_tsig"><div class="tl"><strong>Clé TSIG pour les updates DNS</strong><span>Sécuriser les nsupdate</span></div><div class="ts2"></div></div>
+      <div class="fg" style="margin-top:.75rem">
+        <div class="fgrp"><label>key-name</label><input type="text" id="ddns_tsig_name" value="ddns-key" placeholder="ddns-key"></div>
+        <div class="fgrp"><label>algorithm</label>
+          <select id="ddns_tsig_algo"><option value="HMAC-SHA256">HMAC-SHA256</option><option value="HMAC-SHA512">HMAC-SHA512</option><option value="HMAC-MD5">HMAC-MD5</option></select>
+        </div>
+        <div class="fgrp s2"><label>secret (base64)</label><input type="text" id="ddns_tsig_secret" placeholder="Base64 secret"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Forward / Reverse DNS servers</div>
+      <div id="ddns-servers" class="el">
+        <div class="blk">
+          <div class="fg3">
+            <div class="fgrp"><label>Direction</label><select><option>forward</option><option>reverse</option></select></div>
+            <div class="fgrp"><label>Zone</label><input type="text" value="example.com." placeholder="Zone DNS"></div>
+            <div class="fgrp"><label>IP serveur DNS</label><input type="text" value="127.0.0.1" placeholder="127.0.0.1"></div>
+            <div class="fgrp"><label>Port</label><input type="number" value="53"></div>
+          </div>
+          <button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()" style="margin-top:.5rem">Supprimer</button>
+        </div>
+      </div>
+      <button class="ba" onclick="addDDNSServer()">+ Ajouter un serveur DNS</button>
+    </div>
+  </div>
+
+  <!-- LOGGING -->
+  <div class="sp" id="panel-logging">
+    <div class="ph"><div class="pt">Logging</div><div class="pd">Configuration des loggers Kea</div></div>
+    <div class="card">
+      <div class="ct">Loggers</div>
+      <div id="loggers" class="el">
+        <div class="blk">
+          <div class="fg3">
+            <div class="fgrp"><label>name</label>
+              <select><option>kea-dhcp4</option><option>kea-dhcp6</option><option>kea-dhcp-ddns</option><option>kea-ctrl-agent</option><option>kea-netconf</option><option>*</option></select>
+            </div>
+            <div class="fgrp"><label>severity</label>
+              <select><option>WARN</option><option>INFO</option><option>DEBUG</option><option>ERROR</option><option>FATAL</option></select>
+            </div>
+            <div class="fgrp"><label>debuglevel (si DEBUG)</label><input type="number" value="0" min="0" max="99"></div>
+            <div class="fgrp"><label>output type</label>
+              <select onchange="this.closest('.blk').querySelector('.log-dest').style.display=this.value==='file'?'block':'none'"><option value="file">file</option><option value="stdout">stdout</option><option value="stderr">stderr</option><option value="syslog">syslog</option></select>
+            </div>
+            <div class="fgrp log-dest"><label>Chemin fichier log</label><input type="text" value="/var/log/kea/kea-dhcp4.log"></div>
+            <div class="fgrp"><label>maxsize (octets)</label><input type="number" value="1048576"></div>
+            <div class="fgrp"><label>maxver</label><input type="number" value="8"></div>
+            <div class="tr" onclick="tog(this)"><div class="tl"><strong>flush true</strong><span>Flush après chaque ligne</span></div><div class="ts2"></div></div>
+          </div>
+          <button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()" style="margin-top:.5rem">Supprimer</button>
+        </div>
+      </div>
+      <button class="ba" onclick="addLogger()">+ Ajouter un logger</button>
+    </div>
+  </div>
+
+  <!-- CONTROL AGENT -->
+  <div class="sp" id="panel-ctrl">
+    <div class="ph"><div class="pt">Control Agent</div><div class="pd">kea-ctrl-agent.conf — API REST HTTP</div></div>
+    <div class="card">
+      <div class="ct">HTTP API</div>
+      <div class="fg">
+        <div class="fgrp"><label>http-host</label><input type="text" id="ca_host" value="127.0.0.1"></div>
+        <div class="fgrp"><label>http-port</label><input type="number" id="ca_port" value="8000"></div>
+        <div class="tr on" onclick="tog(this)" id="ca_enabled"><div class="tl"><strong>Activer Control Agent</strong><span>API REST pour gestion Kea</span></div><div class="ts2"></div></div>
+        <div class="tr" onclick="tog(this)" id="ca_tls"><div class="tl"><strong>Activer HTTPS (TLS)</strong><span>Sécuriser l'API REST</span></div><div class="ts2"></div></div>
+        <div class="fgrp"><label>cert-file (TLS)</label><input type="text" id="ca_cert" placeholder="/etc/kea/certs/kea-ca.crt"></div>
+        <div class="fgrp"><label>key-file (TLS)</label><input type="text" id="ca_key" placeholder="/etc/kea/certs/kea-ca.key"></div>
+        <div class="fgrp"><label>ca-cert-file (mTLS)</label><input type="text" id="ca_cacert" placeholder="/etc/kea/certs/ca.crt"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Authentication HTTP Basic</div>
+      <div class="tr" onclick="tog(this)" id="ca_auth"><div class="tl"><strong>Activer l'authentification</strong><span>HTTP Basic Auth sur l'API REST</span></div><div class="ts2"></div></div>
+      <div class="fg" style="margin-top:.75rem">
+        <div class="fgrp"><label>Realm</label><input type="text" id="ca_realm" value="kea-control-agent"></div>
+      </div>
+      <div id="ca-users" class="el" style="margin-top:.5rem">
+        <div class="ei" style="grid-template-columns:1fr 1fr auto">
+          <input type="text" value="admin" placeholder="login">
+          <input type="text" value="" placeholder="password">
+          <button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>
+        </div>
+      </div>
+      <button class="ba" onclick="addCAUser()">+ Ajouter un utilisateur API</button>
+    </div>
+    <div class="card">
+      <div class="ct">Control sockets (UNIX)</div>
+      <div class="fg3">
+        <div class="fgrp"><label>Dhcp4 socket</label><input type="text" id="ca_sock4" value="/run/kea/kea4-ctrl-socket"></div>
+        <div class="fgrp"><label>Dhcp6 socket</label><input type="text" id="ca_sock6" value="/run/kea/kea6-ctrl-socket"></div>
+        <div class="fgrp"><label>D2 socket</label><input type="text" id="ca_sockd2" value="/run/kea/kea-ddns-ctrl-socket"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STORK -->
+  <div class="sp" id="panel-stork">
+    <div class="ph"><div class="pt">Stork Agent</div><div class="pd">Monitoring Kea via Stork (ISC)</div></div>
+    <div class="card">
+      <div class="ct">Configuration Stork Agent</div>
+      <div class="fg">
+        <div class="fgrp"><label>stork-server-url</label><input type="text" id="stork_url" value="http://stork.example.com:8080" placeholder="URL Stork Server"></div>
+        <div class="fgrp"><label>listen-prometheus-only</label><select id="stork_prom_only"><option value="false">false</option><option value="true">true</option></select></div>
+        <div class="fgrp"><label>Prometheus host</label><input type="text" id="stork_prom_host" value="0.0.0.0"></div>
+        <div class="fgrp"><label>Prometheus port</label><input type="number" id="stork_prom_port" value="9547"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ct">Commandes utiles</div>
+      <div style="background:var(--n850);border:1px solid var(--bd);border-radius:8px;padding:1rem;font-family:var(--fm);font-size:12px;line-height:1.8">
+        <div style="color:var(--tm)"># Vérifier config DHCPv4</div>
+        <div style="color:var(--g300)">kea-dhcp4 -t /etc/kea/kea-dhcp4.conf</div>
+        <div style="color:var(--tm);margin-top:.4rem"># Vérifier config DHCPv6</div>
+        <div style="color:var(--g300)">kea-dhcp6 -t /etc/kea/kea-dhcp6.conf</div>
+        <div style="color:var(--tm);margin-top:.4rem"># Recharger la configuration</div>
+        <div style="color:var(--g300)">sudo systemctl reload kea-dhcp4-server</div>
+        <div style="color:var(--tm);margin-top:.4rem"># Commande rndc-like via API</div>
+        <div style="color:var(--g300)">curl -X POST http://127.0.0.1:8000/ -H "Content-Type: application/json" -d '{"command":"config-reload","service":["dhcp4"]}'</div>
+        <div style="color:var(--tm);margin-top:.4rem"># Lister les baux</div>
+        <div style="color:var(--g300)">curl -s -X POST http://127.0.0.1:8000/ -d '{"command":"lease4-get-all","service":["dhcp4"]}' | jq</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- OUTPUT -->
+<aside class="op">
+  <div class="oh">
+    <span class="ot">Kea — Généré</span>
+    <span id="lc" class="badge bb">0 lignes</span>
+  </div>
+  <div class="otabs">
+    <div class="otab active" onclick="sw('dhcp4','kea-dhcp4.conf')">kea-dhcp4.conf</div>
+    <div class="otab" onclick="sw('dhcp6','kea-dhcp6.conf')">kea-dhcp6.conf</div>
+    <div class="otab" onclick="sw('d2','kea-dhcp-ddns.conf')">kea-ddns.conf</div>
+    <div class="otab" onclick="sw('ca','kea-ctrl-agent.conf')">kea-ctrl-agent.conf</div>
+    <div class="otab" onclick="sw('keactrl','keactrl.conf')">keactrl.conf</div>
+  </div>
+  <div class="oc"><pre id="pre"></pre></div>
+  <div class="sbar"><div class="sdot"></div><span id="st">Configuration valide</span></div>
+  <div class="oa">
+    <button class="btn bp" onclick="cp()">Copier</button>
+    <button class="btn bs" onclick="dl()">Télécharger</button>
+    <button class="btn bs" onclick="gen()">Régénérer</button>
+  </div>
+</aside>
+</div>
+
+<div class="cf" id="cf">✓ Copié dans le presse-papier</div>
+
+<script>
+let AT='dhcp4', AF='kea-dhcp4.conf';
+
+const tog=(el)=>{el.classList.toggle('on');gen();};
+const isOn=(id)=>{const e=document.getElementById(id);return e?e.classList.contains('on'):false;};
+const v=(id,fb='')=>{const e=document.getElementById(id);return e?(e.value||fb):fb;};
+const show=(n)=>{
+  document.querySelectorAll('.sp').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.si').forEach(i=>i.classList.remove('active'));
+  const p=document.getElementById('panel-'+n);if(p)p.classList.add('active');
+  document.querySelectorAll('.si').forEach(i=>{if(i.getAttribute('data-s')===n)i.classList.add('active');});
+  gen();
+};
+const sw=(t,f)=>{AT=t;AF=f||t;document.querySelectorAll('.otab').forEach(x=>x.classList.remove('active'));event.target.classList.add('active');gen();};
+const removeEntry=(el)=>{(el.closest('.ei')||el.closest('.blk')||el.parentElement).remove();gen();};
+
+// Helpers
+function addIface(listId){
+  const l=document.getElementById(listId);
+  const i=document.createElement('div');i.className='ei';i.style.gridTemplateColumns='1fr auto';
+  i.innerHTML=`<input type="text" value="eth2" placeholder="Interface"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>`;
+  l.appendChild(i);gen();
+}
+function addRelaySocket(){
+  const l=document.getElementById('relay-sockets');
+  const i=document.createElement('div');i.className='ei';i.style.gridTemplateColumns='1fr 1fr auto';
+  i.innerHTML=`<input type="text" value="10.0.0.1" placeholder="IP locale"><input type="text" value="" placeholder="Interface"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>`;
+  l.appendChild(i);gen();
+}
+function addCustomOpt4(){
+  const l=document.getElementById('custom-opts4');
+  const i=document.createElement('div');i.className='ei';i.style.gridTemplateColumns='80px 1fr auto 1fr auto';
+  i.innerHTML=`<input type="number" value="200" placeholder="Code"><input type="text" value="" placeholder="Nom"><select class="ei"><option>string</option><option>uint8</option><option>uint32</option><option>ipv4-address</option><option>boolean</option></select><input type="text" value="" placeholder="Valeur"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>`;
+  l.appendChild(i);gen();
+}
+function addClientClass(){
+  const l=document.getElementById('client-classes');
+  const i=document.createElement('div');i.className='ei';i.style.gridTemplateColumns='1fr 1fr auto';
+  i.innerHTML=`<input type="text" value="" placeholder="Nom de classe"><input type="text" value="" placeholder="Expression test"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>`;
+  l.appendChild(i);gen();
+}
+function addPool(btn){
+  const list=btn.previousElementSibling;
+  const i=document.createElement('div');i.className='ei';i.style.gridTemplateColumns='1fr 1fr auto';
+  i.innerHTML=`<input type="text" value="" placeholder="Start IP"><input type="text" value="" placeholder="End IP"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>`;
+  list.appendChild(i);gen();
+}
+function addPool6(btn){
+  const list=btn.previousElementSibling;
+  const i=document.createElement('div');i.className='ei';i.style.gridTemplateColumns='1fr auto';
+  i.innerHTML=`<input type="text" value="" placeholder="préfixe ou start - end"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>`;
+  list.appendChild(i);gen();
+}
+function addSubnet4(){
+  const c=document.getElementById('subnets4-container');
+  const idx=Date.now();
+  const d=document.createElement('div');d.className='blk';
+  d.innerHTML=`<div class="blkh"><span class="blkn">subnet4 — nouveau</span><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()">✕</button></div><div class="fg3"><div class="fgrp"><label>subnet</label><input type="text" value="10.0.0.0/24" oninput="gen()"></div><div class="fgrp"><label>id</label><input type="number" value="${Math.floor(Math.random()*900)+100}" oninput="gen()"></div><div class="fgrp"><label>interface</label><input type="text" value="eth0" oninput="gen()"></div><div class="fgrp"><label>valid-lifetime</label><input type="number" value="" placeholder="hérite" oninput="gen()"></div><div class="fgrp"><label>renew-timer</label><input type="number" value="" placeholder="hérite" oninput="gen()"></div></div><div style="margin-top:.75rem"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Pools</label><div class="el pool-list"><div class="ei" style="grid-template-columns:1fr 1fr auto"><input type="text" value="" placeholder="Start"><input type="text" value="" placeholder="End"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button></div></div><button class="ba" onclick="addPool(this)">+ Pool</button></div><div style="margin-top:.75rem"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Options</label><div class="fg3"><div class="fgrp"><label>routers</label><input type="text" value="" placeholder="GW" oninput="gen()"></div><div class="fgrp"><label>dns-servers</label><input type="text" value="" placeholder="DNS" oninput="gen()"></div><div class="fgrp"><label>domain-name</label><input type="text" value="" placeholder="domaine" oninput="gen()"></div></div></div><div style="margin-top:.75rem"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Relay</label><div class="fgrp"><input type="text" value="" placeholder="IP relay" oninput="gen()"></div></div>`;
+  c.appendChild(d);gen();
+}
+function addSubnet6(){
+  const c=document.getElementById('subnets6-container');
+  const d=document.createElement('div');d.className='blk';
+  d.innerHTML=`<div class="blkh"><span class="blkn">subnet6 — nouveau</span><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()">✕</button></div><div class="fg3"><div class="fgrp"><label>subnet</label><input type="text" value="2001:db8:2::/64" oninput="gen()"></div><div class="fgrp"><label>id</label><input type="number" value="${Math.floor(Math.random()*900)+100}" oninput="gen()"></div><div class="fgrp"><label>interface</label><input type="text" value="eth0" oninput="gen()"></div></div><div style="margin-top:.75rem"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Pools IA_NA</label><div class="el pool6-list"><div class="ei" style="grid-template-columns:1fr auto"><input type="text" value="" placeholder="start - end"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button></div></div><button class="ba" onclick="addPool6(this)">+ Pool</button></div><div style="margin-top:.75rem"><label style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--tm);margin-bottom:.4rem;display:block">Options</label><div class="fg"><div class="fgrp"><label>dns-servers</label><input type="text" value="" placeholder="DNS" oninput="gen()"></div><div class="fgrp"><label>domain-search</label><input type="text" value="" placeholder="example.com" oninput="gen()"></div></div></div>`;
+  c.appendChild(d);gen();
+}
+function addReservation4(){
+  const c=document.getElementById('reservations4');
+  const d=document.createElement('div');d.className='blk';
+  d.innerHTML=`<div class="fg3"><div class="fgrp"><label>Identifiant</label><select class="res4-type"><option value="hw-address">MAC</option><option value="client-id">client-id</option><option value="circuit-id">circuit-id</option></select></div><div class="fgrp"><label>Valeur</label><input type="text" value="" placeholder="aa:bb:cc:dd:ee:ff"></div><div class="fgrp"><label>ip-address</label><input type="text" value="" placeholder="IP réservée"></div><div class="fgrp"><label>hostname</label><input type="text" value="" placeholder="nom DNS"></div></div><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()" style="margin-top:.5rem">Supprimer</button>`;
+  c.appendChild(d);gen();
+}
+function addReservation6(){
+  const c=document.getElementById('reservations6');
+  const d=document.createElement('div');d.className='blk';
+  d.innerHTML=`<div class="fg3"><div class="fgrp"><label>Identifiant</label><select><option value="duid">DUID</option><option value="hw-address">MAC</option></select></div><div class="fgrp"><label>Valeur</label><input type="text" value="" placeholder="DUID ou MAC"></div><div class="fgrp"><label>ip-addresses</label><input type="text" value="" placeholder="IA_NA"></div><div class="fgrp"><label>préfixes délégués</label><input type="text" value="" placeholder="IA_PD"></div><div class="fgrp"><label>hostname</label><input type="text" value="" placeholder="nom DNS"></div></div><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()" style="margin-top:.5rem">Supprimer</button>`;
+  c.appendChild(d);gen();
+}
+function addHAPeer(){
+  const c=document.getElementById('ha-peers');
+  const d=document.createElement('div');d.className='blk';
+  d.innerHTML=`<div class="blkh"><span class="blkn">peer — backup</span><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()">✕</button></div><div class="fg"><div class="fgrp"><label>name</label><input type="text" value="kea-backup" oninput="gen()"></div><div class="fgrp"><label>role</label><select onchange="gen()"><option value="backup">backup</option><option value="primary">primary</option><option value="secondary">secondary</option></select></div><div class="fgrp"><label>url</label><input type="text" value="http://192.168.1.3:8000/" oninput="gen()"></div><div class="tr" onclick="tog(this)"><div class="tl"><strong>auto-failover</strong><span></span></div><div class="ts2"></div></div></div>`;
+  c.appendChild(d);gen();
+}
+function addClassPool(){
+  const l=document.getElementById('class-pools');
+  const i=document.createElement('div');i.className='ei';i.style.gridTemplateColumns='1fr 1fr 1fr auto';
+  i.innerHTML=`<input type="text" value="" placeholder="Start"><input type="text" value="" placeholder="End"><input type="text" value="" placeholder="client-class"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>`;
+  l.appendChild(i);gen();
+}
+function addExcludedPool(){
+  const l=document.getElementById('excluded-pools');
+  const i=document.createElement('div');i.className='ei';i.style.gridTemplateColumns='1fr 80px auto';
+  i.innerHTML=`<input type="text" value="" placeholder="Préfixe"><input type="number" value="64" placeholder="Len"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>`;
+  l.appendChild(i);gen();
+}
+function addPDPool(){
+  const c=document.getElementById('pd-pools-container');
+  const d=document.createElement('div');d.className='blk';
+  d.innerHTML=`<div class="blkh"><span class="blkn">IA_PD pool</span><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()">✕</button></div><div class="fg3"><div class="fgrp"><label>subnet id</label><input type="number" value="2" oninput="gen()"></div><div class="fgrp"><label>préfixe</label><input type="text" value="2001:db8:3::" oninput="gen()"></div><div class="fgrp"><label>longueur</label><input type="number" value="48" oninput="gen()"></div><div class="fgrp"><label>délégué</label><input type="number" value="64" oninput="gen()"></div></div>`;
+  c.appendChild(d);gen();
+}
+function addDDNSServer(){
+  const c=document.getElementById('ddns-servers');
+  const d=document.createElement('div');d.className='blk';
+  d.innerHTML=`<div class="fg3"><div class="fgrp"><label>Direction</label><select><option>forward</option><option>reverse</option></select></div><div class="fgrp"><label>Zone</label><input type="text" value="example.com." placeholder="Zone DNS"></div><div class="fgrp"><label>IP DNS</label><input type="text" value="127.0.0.1"></div><div class="fgrp"><label>Port</label><input type="number" value="53"></div></div><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()" style="margin-top:.5rem">Supprimer</button>`;
+  c.appendChild(d);gen();
+}
+function addLogger(){
+  const c=document.getElementById('loggers');
+  const d=document.createElement('div');d.className='blk';
+  d.innerHTML=`<div class="fg3"><div class="fgrp"><label>name</label><select><option>kea-dhcp4</option><option>kea-dhcp6</option><option>kea-dhcp-ddns</option><option>kea-ctrl-agent</option><option>*</option></select></div><div class="fgrp"><label>severity</label><select><option>WARN</option><option>INFO</option><option>DEBUG</option><option>ERROR</option></select></div><div class="fgrp"><label>debuglevel</label><input type="number" value="0" min="0" max="99"></div><div class="fgrp"><label>output</label><select><option value="file">file</option><option value="stdout">stdout</option><option value="syslog">syslog</option></select></div><div class="fgrp"><label>Fichier</label><input type="text" value="/var/log/kea/new.log"></div><div class="fgrp"><label>maxsize</label><input type="number" value="1048576"></div></div><button class="btn bd2 bsm" onclick="this.closest('.blk').remove();gen()" style="margin-top:.5rem">Supprimer</button>`;
+  c.appendChild(d);gen();
+}
+function addCAUser(){
+  const l=document.getElementById('ca-users');
+  const i=document.createElement('div');i.className='ei';i.style.gridTemplateColumns='1fr 1fr auto';
+  i.innerHTML=`<input type="text" value="" placeholder="login"><input type="text" value="" placeholder="password"><button class="btn bd2 bsm" onclick="removeEntry(this)">✕</button>`;
+  l.appendChild(i);gen();
+}
+
+// ── GENERATORS ──
+const J=(obj,indent=2)=>JSON.stringify(obj,null,indent);
+
+function buildLogging(){
+  const loggers=[];
+  document.querySelectorAll('#loggers .blk').forEach(b=>{
+    const sels=b.querySelectorAll('select');
+    const inputs=b.querySelectorAll('input');
+    const name=sels[0]?sels[0].value:'kea-dhcp4';
+    const sev=sels[1]?sels[1].value:'WARN';
+    const dbg=parseInt(inputs[0]?inputs[0].value:'0')||0;
+    const otype=sels[2]?sels[2].value:'file';
+    const fpath=inputs[1]?inputs[1].value:'/var/log/kea/kea-dhcp4.log';
+    const maxsize=parseInt(inputs[2]?inputs[2].value:'1048576')||1048576;
+    const maxver=parseInt(inputs[3]?inputs[3].value:'8')||8;
+    const logger={name,severity:sev};
+    if(sev==='DEBUG') logger.debuglevel=dbg;
+    const output={output:otype==='file'?fpath:otype};
+    if(otype==='file'){output.maxsize=maxsize;output.maxver=maxver;output.flush=true;}
+    logger.output_options=[output];
+    loggers.push(logger);
+  });
+  if(loggers.length===0) loggers.push({name:'kea-dhcp4',severity:'WARN',output_options:[{output:'/var/log/kea/kea-dhcp4.log',maxsize:1048576,maxver:8,flush:true}]});
+  return loggers;
+}
+
+function buildHooks(){
+  const hooks=[];
+  const hp=v('hk_path','/usr/lib/x86_64-linux-gnu/kea/hooks');
+  const hookMap=[
+    ['hk_ha','libdhcp_ha.so',{}],
+    ['hk_lease_cmds','libdhcp_lease_cmds.so',{}],
+    ['hk_stat_cmds','libdhcp_stat_cmds.so',{}],
+    ['hk_host_cmds','libdhcp_host_cmds.so',{}],
+    ['hk_cb_cmds','libdhcp_cb_cmds.so',{}],
+    ['hk_class_cmds','libdhcp_class_cmds.so',{}],
+    ['hk_subnet_cmds','libdhcp_subnet_cmds.so',{}],
+    ['hk_flex_id','libdhcp_flex_id.so',{identifier_expression:'relay4[2].hex'}],
+    ['hk_flex_option','libdhcp_flex_option.so',{}],
+    ['hk_mysql_cb','libdhcp_mysql_cb.so',{}],
+    ['hk_pgsql_cb','libdhcp_pgsql_cb.so',{}],
+    ['hk_user_chk','libdhcp_user_chk.so',{}],
+    ['hk_bootp','libdhcp_bootp.so',{}],
+    ['hk_lease_query','libdhcp_lease_query.so',{}],
+    ['hk_ping_check','libdhcp_ping_check.so',{min_ping_requests:parseInt(v('hk_ping_min','1')),reply_timeout:parseInt(v('hk_ping_timeout','100')),ping_cltt_secs:parseInt(v('hk_ping_cltt','60'))}],
+    ['hk_run_script','libdhcp_run_script.so',{name:v('hk_script_path','/etc/kea/kea-hook.sh'),sync:document.getElementById('hk_script_sync')&&document.getElementById('hk_script_sync').value==='true'}],
+  ];
+  hookMap.forEach(([id,lib,params])=>{
+    if(isOn(id)){
+      const entry={library:`${hp}/${lib}`};
+      if(Object.keys(params).length>0) entry.parameters=params;
+      hooks.push(entry);
+    }
+  });
+  // HA inside hooks
+  if(isOn('hk_ha')){
+    const haPeers=[];
+    document.querySelectorAll('#ha-peers .blk').forEach(pb=>{
+      const inputs=pb.querySelectorAll('input');
+      const sels=pb.querySelectorAll('select');
+      const tr=pb.querySelector('.tr');
+      haPeers.push({
+        name:inputs[0]?inputs[0].value:'kea-primary',
+        role:sels[0]?sels[0].value:'primary',
+        url:inputs[1]?inputs[1].value:'http://192.168.1.1:8000/',
+        'auto-failover':tr?tr.classList.contains('on'):true
+      });
+    });
+    const haHook=hooks.find(h=>h.library&&h.library.includes('libdhcp_ha.so'));
+    if(haHook){
+      haHook.parameters={
+        'high-availability':[{
+          'this-server-name':v('ha_this_server','kea-primary'),
+          mode:document.getElementById('ha_mode')?document.getElementById('ha_mode').value:'hot-standby',
+          'heartbeat-delay':parseInt(v('ha_heartbeat','10000')),
+          'max-response-delay':parseInt(v('ha_max_resp','60000')),
+          'max-ack-delay':parseInt(v('ha_max_ack','5000')),
+          'max-unacked-clients':parseInt(v('ha_max_unacked','10')),
+          'sync-timeout':parseInt(v('ha_sync_timeout','60000')),
+          'send-lease-updates':isOn('ha_send_lease_updates'),
+          'sync-leases':isOn('ha_sync_leases'),
+          peers:haPeers,
+          ...(isOn('ha_tls')?{
+            'tls-cert-file':v('ha_tls_cert'),
+            'tls-key-file':v('ha_tls_key'),
+            'tls-ca-cert-file':v('ha_tls_ca'),
+            'require-client-certs':document.getElementById('ha_tls_client_cert')&&document.getElementById('ha_tls_client_cert').value==='true'
+          }:{})
+        }]
+      };
+    }
+  }
+  return hooks;
+}
+
+function buildLeaseDB(ver){
+  const t=document.getElementById('be_lease_type')?document.getElementById('be_lease_type').value:'memfile';
+  if(t==='memfile'){
+    return{type:'memfile',persist:document.getElementById('be_persist')&&document.getElementById('be_persist').value==='true','lfc-interval':parseInt(v('be_lfc','3600')),name:ver===4?v('be_file4','/var/lib/kea/dhcp4.leases'):v('be_file6','/var/lib/kea/dhcp6.leases')};
+  }
+  const db={type:t,host:v('be_host','localhost'),port:parseInt(v('be_port','3306')),name:v('be_dbname','kea'),user:v('be_user','kea'),password:v('be_pass',''),'connect-timeout':parseInt(v('be_connect_timeout','10')),'reconnect-wait-time':parseInt(v('be_reconnect','3000')),'max-reconnect-tries':parseInt(v('be_max_reconnect','3')),'on-fail':v('be_on_fail','stop-retry-exit')};
+  const ssl=document.getElementById('be_sslmode')?document.getElementById('be_sslmode').value:'disable';
+  if(ssl!=='disable') db['ssl-mode']=ssl;
+  return db;
+}
+
+function buildSubnets4(){
+  const subnets=[];
+  document.querySelectorAll('#subnets4-container .blk').forEach(blk=>{
+    const inputs=blk.querySelectorAll('input[type=text],input[type=number]');
+    // inputs: subnet, id, iface, valid-lifetime, renew-timer, rebind-timer, ...
+    const allInputs=Array.from(inputs);
+    const subnet=allInputs[0]?allInputs[0].value:'192.168.1.0/24';
+    const id=parseInt(allInputs[1]?allInputs[1].value:'1')||1;
+    const iface=allInputs[2]?allInputs[2].value:'';
+    const valid=allInputs[3]?parseInt(allInputs[3].value)||null:null;
+    const renew=allInputs[4]?parseInt(allInputs[4].value)||null:null;
+    const rebind=allInputs[5]?parseInt(allInputs[5].value)||null:null;
+    // Pools
+    const pools=[];
+    blk.querySelectorAll('.pool-list .ei').forEach(pi=>{
+      const pinputs=pi.querySelectorAll('input');
+      if(pinputs[0]&&pinputs[1]&&pinputs[0].value&&pinputs[1].value){
+        pools.push({pool:`${pinputs[0].value} - ${pinputs[1].value}`});
+      }
+    });
+    // Options (after pools: routers, dns, domain)
+    const optInputs=blk.querySelectorAll('.fg3 input[type=text]');
+    const routers=optInputs[0]?optInputs[0].value:'';
+    const dns=optInputs[1]?optInputs[1].value:'';
+    const domain=optInputs[2]?optInputs[2].value:'';
+    const optData=[];
+    if(routers){optData.push({name:'routers',data:routers});}
+    if(dns){optData.push({name:'domain-name-servers',data:dns});}
+    if(domain){optData.push({name:'domain-name',data:domain});}
+    // Relay
+    const relayInputs=blk.querySelectorAll('.fgrp input');
+    const relayIP=relayInputs[relayInputs.length-1]?relayInputs[relayInputs.length-1].value:'';
+    const s={subnet,id};
+    if(iface) s['interface']=iface;
+    if(valid) s['valid-lifetime']=valid;
+    if(renew) s['renew-timer']=renew;
+    if(rebind) s['rebind-timer']=rebind;
+    if(pools.length>0) s.pools=pools;
+    if(optData.length>0) s['option-data']=optData;
+    if(relayIP) s.relay={'ip-addresses':[relayIP]};
+    // Reservations in this subnet
+    const resas=[];
+    document.querySelectorAll('#reservations4 .blk').forEach(rb=>{
+      const rsels=rb.querySelectorAll('select');
+      const rinputs=rb.querySelectorAll('input');
+      const idType=rsels[0]?rsels[0].value:'hw-address';
+      const idVal=rinputs[0]?rinputs[0].value:'';
+      const ip=rinputs[1]?rinputs[1].value:'';
+      const host=rinputs[2]?rinputs[2].value:'';
+      if(idVal&&ip){const r={[idType]:idVal,'ip-address':ip};if(host)r.hostname=host;resas.push(r);}
+    });
+    if(resas.length>0) s.reservations=resas;
+    subnets.push(s);
+  });
+  return subnets;
+}
+
+function buildSubnets6(){
+  const subnets=[];
+  document.querySelectorAll('#subnets6-container .blk').forEach(blk=>{
+    const allInputs=Array.from(blk.querySelectorAll('input[type=text],input[type=number]'));
+    const subnet=allInputs[0]?allInputs[0].value:'2001:db8:1::/64';
+    const id=parseInt(allInputs[1]?allInputs[1].value:'1')||1;
+    const iface=allInputs[2]?allInputs[2].value:'';
+    // Pools
+    const pools=[];
+    blk.querySelectorAll('.pool6-list .ei').forEach(pi=>{
+      const p=pi.querySelector('input');
+      if(p&&p.value){
+        const pv=p.value.includes(' - ')?p.value:p.value;
+        pools.push({pool:pv});
+      }
+    });
+    // Options
+    const optInputs=blk.querySelectorAll('.fg input[type=text]');
+    const dns=optInputs[0]?optInputs[0].value:'';
+    const domain=optInputs[1]?optInputs[1].value:'';
+    const optData=[];
+    if(dns)optData.push({name:'dns-servers',data:dns});
+    if(domain)optData.push({name:'domain-search',data:domain});
+    // PD Pools
+    const pdPools=[];
+    document.querySelectorAll('#pd-pools-container .blk').forEach(pd=>{
+      const pi=Array.from(pd.querySelectorAll('input[type=text],input[type=number]'));
+      const subnetId=parseInt(pi[0]?pi[0].value:'1');
+      if(subnetId===id){
+        pdPools.push({prefix:pi[1]?pi[1].value:'2001:db8:2::','prefix-len':parseInt(pi[2]?pi[2].value:'56'),'delegated-len':parseInt(pi[3]?pi[3].value:'64'),'preferred-lifetime':parseInt(pi[4]?pi[4].value:'3600'),'valid-lifetime':parseInt(pi[5]?pi[5].value:'7200')});
+      }
+    });
+    const s={subnet,id};
+    if(iface) s.interface=iface;
+    if(pools.length>0) s.pools=pools;
+    if(pdPools.length>0) s['pd-pools']=pdPools;
+    if(optData.length>0) s['option-data']=optData;
+    // Reservations
+    const resas=[];
+    document.querySelectorAll('#reservations6 .blk').forEach(rb=>{
+      const rsels=rb.querySelectorAll('select');
+      const rinputs=rb.querySelectorAll('input');
+      const idType=rsels[0]?rsels[0].value:'duid';
+      const idVal=rinputs[0]?rinputs[0].value:'';
+      const ip=rinputs[1]?rinputs[1].value:'';
+      const host=rinputs[3]?rinputs[3].value:'';
+      if(idVal){const r={[idType]:idVal};if(ip)r['ip-addresses']=[ip];if(host)r.hostname=host;resas.push(r);}
+    });
+    if(resas.length>0) s.reservations=resas;
+    subnets.push(s);
+  });
+  return subnets;
+}
+
+function buildOptionData4(){
+  const opts=[];
+  const add=(name,val)=>{if(val)opts.push({name,data:val});};
+  add('routers',v('opt4_routers',''));
+  add('domain-name-servers',v('opt4_dns',''));
+  add('domain-name',v('opt4_domain',''));
+  add('domain-search',v('opt4_domain_search',''));
+  add('broadcast-address',v('opt4_broadcast',''));
+  add('subnet-mask',v('opt4_netmask',''));
+  add('ntp-servers',v('opt4_ntp',''));
+  add('log-servers',v('opt4_log',''));
+  if(isOn('opt4_pxe')){
+    if(v('opt4_tftp')) add('tftp-server-name',v('opt4_tftp'));
+    if(v('opt4_bootfile')) add('bootfile-name',v('opt4_bootfile'));
+  }
+  if(isOn('opt4_vendor')&&v('opt4_vendor_hex')){
+    opts.push({name:'vendor-encapsulated-options',data:v('opt4_vendor_hex')});
+  }
+  document.querySelectorAll('#custom-opts4 .ei').forEach(item=>{
+    const inputs=item.querySelectorAll('input');
+    if(inputs[1]&&inputs[2]&&inputs[1].value&&inputs[2].value){
+      opts.push({name:inputs[1].value,code:parseInt(inputs[0]?inputs[0].value:'200'),data:inputs[2].value});
+    }
+  });
+  return opts;
+}
+
+function buildClientClasses(){
+  const classes=[];
+  document.querySelectorAll('#client-classes .ei').forEach(item=>{
+    const inputs=item.querySelectorAll('input');
+    if(inputs[0]&&inputs[0].value){
+      const cls={name:inputs[0].value};
+      if(inputs[1]&&inputs[1].value) cls.test=inputs[1].value;
+      // PXE boot options by class
+      if(inputs[0].value==='PXE-BIOS'&&isOn('opt4_pxe')){
+        cls['option-data']=[{name:'bootfile-name',data:v('opt4_bios_boot','pxelinux.0')},{name:'tftp-server-name',data:v('opt4_tftp','')}];
+        if(v('g4_next_server')) cls['next-server']=v('g4_next_server');
+        if(v('g4_boot_file')) cls['boot-file-name']=v('g4_boot_file');
+      }
+      if(inputs[0].value==='PXE-UEFI'&&isOn('opt4_pxe')){
+        cls['option-data']=[{name:'bootfile-name',data:v('opt4_uefi_boot','bootx64.efi')},{name:'tftp-server-name',data:v('opt4_tftp','')}];
+      }
+      classes.push(cls);
+    }
+  });
+  return classes;
+}
+
+function genDhcp4(){
+  const leaseDB=buildLeaseDB(4);
+  const subnets=buildSubnets4();
+  const optData=buildOptionData4();
+  const classes=buildClientClasses();
+  const hooks=buildHooks();
+  const logging=buildLogging();
+
+  const ifaces=[];
+  document.querySelectorAll('#ifaces4-list .ei input').forEach(i=>{if(i.value)ifaces.push(i.value);});
+
+  const cfg={
+    Dhcp4:{
+      'valid-lifetime':parseInt(v('g4_valid','86400')),
+      'min-valid-lifetime':parseInt(v('g4_minvalid','600')),
+      'max-valid-lifetime':parseInt(v('g4_maxvalid','86400')),
+      'renew-timer':parseInt(v('g4_renew','43200')),
+      'rebind-timer':parseInt(v('g4_rebind','75600')),
+      'offer-lifetime':parseInt(v('g4_offer','120')),
+      'interfaces-config':{
+        interfaces:ifaces.length>0?ifaces:['eth0'],
+        're-detect':isOn('if4_redetect'),
+        'service-sockets-max-retries':parseInt(v('if4_max_retries','5')),
+        'service-sockets-retry-wait-time':parseInt(v('if4_retry_wait','5000'))
+      },
+      'lease-database':leaseDB,
+      'expired-leases-processing':{
+        'flush-reclaimed-timer-wait-time':parseInt(v('g4_flush_wait','25')),
+        'hold-reclaimed-time':parseInt(v('g4_hold_reclaimed','3600')),
+        'max-reclaim-leases':parseInt(v('g4_max_reclaim','100')),
+        'max-reclaim-time':parseInt(v('g4_max_reclaim_time','250')),
+        'unwarned-reclaim-cycles':parseInt(v('g4_unwarn_cycles','5'))
+      }
+    }
+  };
+
+  if(optData.length>0) cfg.Dhcp4['option-data']=optData;
+  if(classes.length>0) cfg.Dhcp4['client-classes']=classes;
+  if(subnets.length>0){
+    if(isOn('sn4_shared')&&v('sn4_name')){
+      cfg.Dhcp4['shared-networks']=[{name:v('sn4_name'),'subnet4':subnets}];
+    } else {
+      cfg.Dhcp4['subnet4']=subnets;
+    }
+  }
+
+  if(v('g4_next_server')) cfg.Dhcp4['next-server']=v('g4_next_server');
+  if(v('g4_server_hostname')) cfg.Dhcp4['server-hostname']=v('g4_server_hostname');
+  if(v('g4_boot_file')) cfg.Dhcp4['boot-file-name']=v('g4_boot_file');
+  cfg.Dhcp4['match-client-id']=document.getElementById('g4_match_clientid')&&document.getElementById('g4_match_clientid').value==='true';
+  cfg.Dhcp4['authoritative']=document.getElementById('g4_authoritative')&&document.getElementById('g4_authoritative').value==='true';
+  cfg.Dhcp4['echo-client-id']=isOn('g4_echo_clientid');
+  cfg.Dhcp4['store-extended-info']=isOn('g4_store_extended');
+  if(isOn('g4_calculate_tee')) cfg.Dhcp4['calculate-tee-times']=true;
+  if(isOn('g4_early_global')) cfg.Dhcp4['early-global-reservations-lookup']=true;
+  cfg.Dhcp4['sanity-checks']={'lease-checks':v('g4_lease_checks','warn')};
+
+  if(isOn('mt_enabled')){
+    cfg.Dhcp4['multi-threading']={'enable-multi-threading':true,'thread-pool-size':parseInt(v('mt_pool_size','4')),'packet-queue-size':parseInt(v('mt_queue_size','64'))};
+  }
+
+  if(isOn('ddns_enabled')){
+    cfg.Dhcp4['dhcp-ddns']={
+      'enable-updates':true,'server-ip':v('ddns_ip','127.0.0.1'),'server-port':parseInt(v('ddns_port','53001')),
+      'sender-ip':'','sender-port':0,'max-queue-size':1024,'ncr-protocol':v('ddns_ncr_proto','UDP'),'ncr-format':v('ddns_ncr_fmt','JSON')
+    };
+    cfg.Dhcp4['ddns-qualifying-suffix']=v('ddns_suffix','');
+    cfg.Dhcp4['ddns-override-no-update']=isOn('ddns_override_no_update');
+    cfg.Dhcp4['ddns-override-client-update']=isOn('ddns_override_client_update');
+    cfg.Dhcp4['ddns-replace-client-name']=v('ddns_replace_name','never');
+    cfg.Dhcp4['ddns-generated-prefix']=v('ddns_prefix','host');
+  }
+
+  if(v('g4_server_tag')) cfg.Dhcp4['server-tag']=v('g4_server_tag');
+
+  if(isOn('be_hosts_enabled')){
+    cfg.Dhcp4['hosts-database']={type:v('be_hosts_type','mysql'),host:v('be_hosts_host','localhost'),name:v('be_hosts_db','kea'),user:v('be_hosts_user','kea'),password:v('be_hosts_pass','')};
+  }
+
+  if(isOn('be_cb_enabled')){
+    cfg.Dhcp4['config-databases']=[{type:v('be_cb_type','mysql'),host:v('be_cb_host','localhost'),name:v('be_cb_db','kea_config'),user:v('be_cb_user','kea'),password:v('be_cb_pass','')}];
+  }
+
+  if(hooks.length>0) cfg.Dhcp4['hooks-libraries']=hooks;
+
+  cfg.Logging={'loggers':logging};
+
+  return '// kea-dhcp4.conf — Généré par OCASDEV Kea Generator\n// https://ocasdev.com | AS216190\n// '+new Date().toISOString()+'\n\n'+J(cfg);
+}
+
+function genDhcp6(){
+  const leaseDB=buildLeaseDB(6);
+  const subnets=buildSubnets6();
+  const hooks=buildHooks();
+  const logging=buildLogging().map(l=>({...l,name:l.name.replace('dhcp4','dhcp6')}));
+
+  const ifaces=[];
+  document.querySelectorAll('#ifaces6-list .ei input').forEach(i=>{if(i.value)ifaces.push(i.value);});
+
+  const optData=[];
+  if(v('g6_dns')) optData.push({name:'dns-servers',data:v('g6_dns')});
+  if(v('g6_domain')) optData.push({name:'domain-search',data:v('g6_domain')});
+  if(v('g6_sntp')) optData.push({name:'sntp-servers',data:v('g6_sntp')});
+
+  const cfg={
+    Dhcp6:{
+      'preferred-lifetime':parseInt(v('g6_preferred','3600')),
+      'valid-lifetime':parseInt(v('g6_valid','7200')),
+      'min-valid-lifetime':parseInt(v('g6_minvalid','600')),
+      'max-valid-lifetime':parseInt(v('g6_maxvalid','86400')),
+      'renew-timer':parseInt(v('g6_renew','1800')),
+      'rebind-timer':parseInt(v('g6_rebind','2700')),
+      'interfaces-config':{interfaces:ifaces.length>0?ifaces:['eth0']},
+      'lease-database':{...leaseDB,name:leaseDB.name?leaseDB.name.replace('dhcp4','dhcp6'):'/var/lib/kea/dhcp6.leases'}
+    }
+  };
+
+  if(optData.length>0) cfg.Dhcp6['option-data']=optData;
+  if(subnets.length>0) cfg.Dhcp6['subnet6']=subnets;
+  cfg.Dhcp6['store-extended-info']=isOn('g6_store_extended');
+  if(isOn('g6_calculate_tee')) cfg.Dhcp6['calculate-tee-times']=true;
+  cfg.Dhcp6['dhcp6-rapid-commit']=document.getElementById('g6_rapid_commit')&&document.getElementById('g6_rapid_commit').value==='true';
+
+  if(isOn('ddns_enabled')){
+    cfg.Dhcp6['dhcp-ddns']={'enable-updates':true,'server-ip':v('ddns_ip','127.0.0.1'),'server-port':parseInt(v('ddns_port','53001')),'ncr-protocol':v('ddns_ncr_proto','UDP'),'ncr-format':'JSON'};
+    cfg.Dhcp6['ddns-qualifying-suffix']=v('ddns_suffix','');
+    cfg.Dhcp6['ddns-override-no-update']=isOn('ddns_override_no_update');
+  }
+
+  if(isOn('mt_enabled')){
+    cfg.Dhcp6['multi-threading']={'enable-multi-threading':true,'thread-pool-size':parseInt(v('mt_pool_size','4')),'packet-queue-size':parseInt(v('mt_queue_size','64'))};
+  }
+
+  if(hooks.length>0) cfg.Dhcp6['hooks-libraries']=hooks.map(h=>({...h,library:h.library?h.library.replace('libdhcp_','libdhcp_'):h.library}));
+
+  cfg.Logging={'loggers':logging};
+
+  return '// kea-dhcp6.conf — Généré par OCASDEV Kea Generator\n// https://ocasdev.com | AS216190\n// '+new Date().toISOString()+'\n\n'+J(cfg);
+}
+
+function genD2(){
+  const fwdZones=[];const revZones=[];
+  document.querySelectorAll('#ddns-servers .blk').forEach(b=>{
+    const sels=b.querySelectorAll('select');
+    const inputs=b.querySelectorAll('input');
+    const dir=sels[0]?sels[0].value:'forward';
+    const zone=inputs[0]?inputs[0].value:'example.com.';
+    const ip=inputs[1]?inputs[1].value:'127.0.0.1';
+    const port=parseInt(inputs[2]?inputs[2].value:'53');
+    const entry={'name':zone,'dns-servers':[{'ip-address':ip,'port':port}]};
+    if(isOn('ddns_tsig')&&v('ddns_tsig_name')){
+      entry['key-name']=v('ddns_tsig_name');
+    }
+    if(dir==='forward') fwdZones.push(entry);
+    else revZones.push(entry);
+  });
+
+  const d2={
+    DhcpDdns:{
+      'ip-address':v('ddns_ip','127.0.0.1'),
+      'port':parseInt(v('ddns_port','53001')),
+      'dns-server-timeout':parseInt(v('ddns_timeout','500')),
+      'ncr-protocol':v('ddns_ncr_proto','UDP'),
+      'ncr-format':v('ddns_ncr_fmt','JSON'),
+      'tsig-keys':[],
+      'forward-ddns':{'ddns-domains':fwdZones.length>0?fwdZones:[{'name':'example.com.','dns-servers':[{'ip-address':'127.0.0.1','port':53}]}]},
+      'reverse-ddns':{'ddns-domains':revZones.length>0?revZones:[{'name':'1.168.192.in-addr.arpa.','dns-servers':[{'ip-address':'127.0.0.1','port':53}]}]}
+    },
+    Logging:{'loggers':[{name:'kea-dhcp-ddns',severity:'WARN',output_options:[{output:'/var/log/kea/kea-ddns.log',maxsize:1048576,maxver:8,flush:true}]}]}
+  };
+
+  if(isOn('ddns_tsig')&&v('ddns_tsig_name')){
+    d2.DhcpDdns['tsig-keys']=[{'name':v('ddns_tsig_name'),'algorithm':v('ddns_tsig_algo','HMAC-SHA256'),'secret':v('ddns_tsig_secret','')}];
+  }
+
+  return '// kea-dhcp-ddns.conf — Généré par OCASDEV Kea Generator\n// https://ocasdev.com | AS216190\n// '+new Date().toISOString()+'\n\n'+J(d2);
+}
+
+function genCA(){
+  const users=[];
+  document.querySelectorAll('#ca-users .ei').forEach(item=>{
+    const inputs=item.querySelectorAll('input');
+    if(inputs[0]&&inputs[0].value){
+      users.push({user:inputs[0].value,password:inputs[1]?inputs[1].value:''});
+    }
+  });
+
+  const ca={
+    'Control-agent':{
+      'http-host':v('ca_host','127.0.0.1'),
+      'http-port':parseInt(v('ca_port','8000')),
+      'control-sockets':{
+        dhcp4:{'socket-type':'unix','socket-name':v('ca_sock4','/run/kea/kea4-ctrl-socket')},
+        dhcp6:{'socket-type':'unix','socket-name':v('ca_sock6','/run/kea/kea6-ctrl-socket')},
+        d2:{'socket-type':'unix','socket-name':v('ca_sockd2','/run/kea/kea-ddns-ctrl-socket')}
+      }
+    },
+    Logging:{'loggers':[{name:'kea-ctrl-agent',severity:'WARN',output_options:[{output:'/var/log/kea/kea-ctrl-agent.log',maxsize:1048576,maxver:8,flush:true}]}]}
+  };
+
+  if(isOn('ca_tls')){
+    ca['Control-agent']['trust-anchor']=v('ca_cacert','');
+    ca['Control-agent']['cert-file']=v('ca_cert','');
+    ca['Control-agent']['key-file']=v('ca_key','');
+    ca['Control-agent']['cert-required']=true;
+  }
+
+  if(isOn('ca_auth')&&users.length>0){
+    ca['Control-agent']['authentication']={type:'basic',realm:v('ca_realm','kea-control-agent'),clients:users};
+  }
+
+  return '// kea-ctrl-agent.conf — Généré par OCASDEV Kea Generator\n// https://ocasdev.com | AS216190\n// '+new Date().toISOString()+'\n\n'+J(ca);
+}
+
+function genKeaCtrl(){
+  const lines=['# keactrl.conf — Généré par OCASDEV Kea Generator','# https://ocasdev.com | AS216190',`# ${new Date().toISOString()}`,''];
+  lines.push('# Chemins des exécutables');
+  lines.push('kea_dhcp4_server="/usr/sbin/kea-dhcp4"');
+  lines.push('kea_dhcp6_server="/usr/sbin/kea-dhcp6"');
+  lines.push('kea_dhcp_ddns_server="/usr/sbin/kea-dhcp-ddns"');
+  lines.push('kea_ctrl_agent="/usr/sbin/kea-ctrl-agent"');
+  lines.push('kea_netconf="/usr/sbin/kea-netconf"');
+  lines.push('');
+  lines.push('# Fichiers de configuration');
+  lines.push('kea_dhcp4_config_file="/etc/kea/kea-dhcp4.conf"');
+  lines.push('kea_dhcp6_config_file="/etc/kea/kea-dhcp6.conf"');
+  lines.push('kea_dhcp_ddns_config_file="/etc/kea/kea-dhcp-ddns.conf"');
+  lines.push('kea_ctrl_agent_config_file="/etc/kea/kea-ctrl-agent.conf"');
+  lines.push('kea_netconf_config_file="/etc/kea/kea-netconf.conf"');
+  lines.push('');
+  lines.push('# Services à activer (yes/no)');
+  lines.push('dhcp4=yes');
+  lines.push('dhcp6=yes');
+  lines.push(`dhcp_ddns=${isOn('ddns_enable_updates_d')?'yes':'no'}`);
+  lines.push(`ctrl_agent=${isOn('ca_enabled')?'yes':'no'}`);
+  lines.push('netconf=no');
+  lines.push('');
+  lines.push('# Répertoires PID');
+  lines.push('kea_pidfile_dir="/run/kea"');
+  lines.push('kea_lockfile_dir="/run/kea"');
+  return lines.join('\n');
+}
+
+function highlight(c){
+  return c
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/(\/\/[^\n]*)/g,'<span class="cmt">$1</span>')
+    .replace(/(#[^\n]*)/g,'<span class="cmt">$1</span>')
+    .replace(/"(Dhcp4|Dhcp6|DhcpDdns|Control-agent|Logging)"/g,'"<span class="sec">$1</span>"')
+    .replace(/"(subnet4|subnet6|pools|option-data|reservations|client-classes|hooks-libraries|lease-database|interfaces-config|high-availability|peers|forward-ddns|reverse-ddns|tsig-keys|pd-pools|shared-networks|authentication|control-sockets|multi-threading|expired-leases-processing|dhcp-ddns|hosts-database|config-databases)"/g,'"<span class="key">$1</span>"')
+    .replace(/:\s*(true|false)/g,': <span class="kw">$1</span>')
+    .replace(/:\s*(\d+)([,\n\r])/g,': <span class="num">$1</span>$2')
+    .replace(/"([\d\.:\/\-a-f]+)"(\s*[,\}])/g,'"<span class="str">$1</span>"$2');
+}
+
+function gen(){
+  let code='';
+  switch(AT){
+    case 'dhcp4': code=genDhcp4();break;
+    case 'dhcp6': code=genDhcp6();break;
+    case 'd2':    code=genD2();break;
+    case 'ca':    code=genCA();break;
+    case 'keactrl':code=genKeaCtrl();break;
+  }
+  const pre=document.getElementById('pre');
+  pre.innerHTML=highlight(code);
+  const lc=code.split('\n').length;
+  document.getElementById('lc').textContent=lc+' lignes';
+  document.getElementById('st').textContent=`Configuration valide · ${lc} lignes`;
+
+  // Toggle SQL fields
+  const t=document.getElementById('be_lease_type')?document.getElementById('be_lease_type').value:'memfile';
+  const memDiv=document.getElementById('be-memfile');
+  const sqlDiv=document.getElementById('be-sql');
+  if(memDiv) memDiv.style.display=t==='memfile'?'block':'none';
+  if(sqlDiv) sqlDiv.style.display=t!=='memfile'?'block':'none';
+}
+
+function cp(){
+  let code='';
+  switch(AT){case 'dhcp4':code=genDhcp4();break;case 'dhcp6':code=genDhcp6();break;case 'd2':code=genD2();break;case 'ca':code=genCA();break;case 'keactrl':code=genKeaCtrl();break;}
+  navigator.clipboard.writeText(code).then(()=>{const f=document.getElementById('cf');f.classList.add('show');setTimeout(()=>f.classList.remove('show'),2200);});
+}
+
+function dl(){
+  const names={dhcp4:'kea-dhcp4.conf',dhcp6:'kea-dhcp6.conf',d2:'kea-dhcp-ddns.conf',ca:'kea-ctrl-agent.conf',keactrl:'keactrl.conf'};
+  let code='';
+  switch(AT){case 'dhcp4':code=genDhcp4();break;case 'dhcp6':code=genDhcp6();break;case 'd2':code=genD2();break;case 'ca':code=genCA();break;case 'keactrl':code=genKeaCtrl();break;}
+  const blob=new Blob([code],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=names[AT]||'kea.conf';a.click();
+}
+
+document.addEventListener('input',gen);
+document.addEventListener('change',gen);
+gen();
+</script>
+</body>
+</html>
